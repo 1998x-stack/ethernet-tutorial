@@ -1,0 +1,288 @@
+{
+  "title": "以太网通信",
+  "emoji": "🌐",
+  "subtitle": "🌐 28章 实战体系",
+  "chapterCount": 28,
+  "chapters": [
+    {
+      "num": "01",
+      "title": "以太网的起源与精神",
+      "topics": [
+        "Bob Metcalfe",
+        "ALOHA网络",
+        "以太网命名"
+      ],
+      "file": "01.html"
+    },
+    {
+      "num": "02",
+      "title": "以太网的演化史",
+      "topics": [
+        "10BASE5→10BASE-T",
+        "交换式以太网",
+        "速率跃迁"
+      ],
+      "file": "02.html"
+    },
+    {
+      "num": "03",
+      "title": "OSI模型与以太网的位置",
+      "topics": [
+        "物理层·数据链路层",
+        "LLC·MAC子层",
+        "封装过程"
+      ],
+      "file": "03.html"
+    },
+    {
+      "num": "04",
+      "title": "以太网帧格式深度解析",
+      "topics": [
+        "DIX帧",
+        "IEEE 802.3帧",
+        "VLAN标签帧"
+      ],
+      "file": "04.html"
+    },
+    {
+      "num": "05",
+      "title": "MAC地址与寻址机制",
+      "topics": [
+        "OUI",
+        "单播·组播·广播",
+        "MAC表"
+      ],
+      "file": "05.html"
+    },
+    {
+      "num": "06",
+      "title": "CSMA/CD与半双工时代",
+      "topics": [
+        "冲突域",
+        "截断二进制指数退避",
+        "最小时隙"
+      ],
+      "file": "06.html"
+    },
+    {
+      "num": "07",
+      "title": "从共享介质到全双工交换",
+      "topics": [
+        "全双工·微秒级转发",
+        "冲突域消失",
+        "背板带宽"
+      ],
+      "file": "07.html"
+    },
+    {
+      "num": "08",
+      "title": "透明桥接与生成树协议",
+      "topics": [
+        "洪泛与学习",
+        "STP·RSTP",
+        "BPDU"
+      ],
+      "file": "08.html"
+    },
+    {
+      "num": "09",
+      "title": "VLAN与802.1Q",
+      "topics": [
+        "广播域隔离",
+        "Trunk·Access",
+        "QinQ"
+      ],
+      "file": "09.html"
+    },
+    {
+      "num": "10",
+      "title": "链路聚合与LACP",
+      "topics": [
+        "LAG",
+        "负载分担",
+        "跨设备聚合"
+      ],
+      "file": "10.html"
+    },
+    {
+      "num": "11",
+      "title": "以太网流控与QoS",
+      "topics": [
+        "PFC",
+        "ECN",
+        "优先级队列"
+      ],
+      "file": "11.html"
+    },
+    {
+      "num": "12",
+      "title": "组播与IGMP Snooping",
+      "topics": [
+        "IP组播→MAC组播映射",
+        "IGMP·MLD",
+        "23位陷阱"
+      ],
+      "file": "12.html"
+    },
+    {
+      "num": "13",
+      "title": "以太网OAM与链路监控",
+      "topics": [
+        "CFM·Y.1731",
+        "丢包·时延测量",
+        "Dying Gasp"
+      ],
+      "file": "13.html"
+    },
+    {
+      "num": "14",
+      "title": "MACsec与链路层安全",
+      "topics": [
+        "802.1AE",
+        "GCM-AES",
+        "密钥协商"
+      ],
+      "file": "14.html"
+    },
+    {
+      "num": "15",
+      "title": "园区网络设计实战",
+      "topics": [
+        "三层架构",
+        "堆叠·虚拟化",
+        "高可用"
+      ],
+      "file": "15.html"
+    },
+    {
+      "num": "16",
+      "title": "数据中心以太网架构",
+      "topics": [
+        "Clos网络",
+        "Spine-Leaf",
+        "ECMP"
+      ],
+      "file": "16.html"
+    },
+    {
+      "num": "17",
+      "title": "以太网供电(PoE)",
+      "topics": [
+        "802.3af·at·bt",
+        "PSE·PD",
+        "供电协商"
+      ],
+      "file": "17.html"
+    },
+    {
+      "num": "18",
+      "title": "以太网故障排查方法论",
+      "topics": [
+        "分层排查",
+        "流量分析",
+        "常见故障模式"
+      ],
+      "file": "18.html"
+    },
+    {
+      "num": "19",
+      "title": "时间敏感网络(TSN)",
+      "topics": [
+        "802.1Qbv",
+        "802.1AS",
+        "确定性延迟"
+      ],
+      "file": "19.html"
+    },
+    {
+      "num": "20",
+      "title": "汽车以太网",
+      "topics": [
+        "100BASE-T1",
+        "1000BASE-T1",
+        "DoIP"
+      ],
+      "file": "20.html"
+    },
+    {
+      "num": "21",
+      "title": "单对以太网(SPE)",
+      "topics": [
+        "10BASE-T1L",
+        "PoDL",
+        "工业物联网"
+      ],
+      "file": "21.html"
+    },
+    {
+      "num": "22",
+      "title": "虚拟化与Overlay网络",
+      "topics": [
+        "VXLAN",
+        "NVGRE",
+        "EVPN"
+      ],
+      "file": "22.html"
+    },
+    {
+      "num": "23",
+      "title": "Wireshark抓包分析实战",
+      "topics": [
+        "捕获过滤器·显示过滤器",
+        "TCP流追踪",
+        "协议解析"
+      ],
+      "file": "23.html"
+    },
+    {
+      "num": "24",
+      "title": "网络性能测试与基准",
+      "topics": [
+        "iperf3",
+        "RFC 2544",
+        "吞吐量·时延·抖动"
+      ],
+      "file": "24.html"
+    },
+    {
+      "num": "25",
+      "title": "软件定义网络与以太网",
+      "topics": [
+        "OpenFlow",
+        "SDN控制器",
+        "P4可编程交换"
+      ],
+      "file": "25.html"
+    },
+    {
+      "num": "26",
+      "title": "超以太网：UEC与AI网络",
+      "topics": [
+        "UEC 1.0",
+        "报文喷洒",
+        "LLR链路重传"
+      ],
+      "file": "26.html"
+    },
+    {
+      "num": "27",
+      "title": "800G/1.6T与400G/通道技术",
+      "topics": [
+        "PAM4·PAM6",
+        "112G·224G SerDes",
+        "LPO·CPO"
+      ],
+      "file": "27.html"
+    },
+    {
+      "num": "28",
+      "title": "综合项目：企业网络设计",
+      "topics": [
+        "需求分析·拓扑设计",
+        "VLAN规划·安全策略",
+        "文档交付"
+      ],
+      "file": "28.html"
+    }
+  ]
+}
