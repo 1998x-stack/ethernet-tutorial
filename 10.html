@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>第10章 链路聚合与LACP</title>
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div class="double-border">
+<div class="container">
+    <div class="sidebar">
+        <h3>🌐 课程目录</h3>
+        <ul class="chapter-list">
+            <li><a href="01.html">第1章 以太网的起源与精神</a></li>
+            <li><a href="02.html">第2章 以太网的演化史</a></li>
+            <li><a href="03.html">第3章 OSI模型与以太网的位置</a></li>
+            <li><a href="04.html">第4章 以太网帧深度解析</a></li>
+            <li><a href="05.html">第5章 MAC地址与寻址机制</a></li>
+            <li><a href="06.html">第6章 CSMA/CD与半双工时代</a></li>
+            <li><a href="07.html">第7章 从共享介质到全双工交换</a></li>
+            <li><a href="08.html">第8章 透明桥接与生成树协议</a></li>
+            <li><a href="09.html">第9章 VLAN与802.1Q</a></li>
+            <li><a href="10.html" class="active">第10章 链路聚合与LACP</a></li>
+            <li><a href="11.html">第11章 以太网流控与QoS</a></li>
+            <li><a href="12.html">第12章 组播与IGMP Snooping</a></li>
+            <li><a href="13.html">第13章 以太网OAM与链路监控</a></li>
+            <li><a href="14.html">第14章 MACsec与链路层安全</a></li>
+            <li><a href="15.html">第15章 园区网络设计实战</a></li>
+            <li><a href="16.html">第16章 数据中心以太网架构</a></li>
+            <li><a href="17.html">第17章 以太网供电(PoE)</a></li>
+            <li><a href="18.html">第18章 以太网故障排查方法论</a></li>
+            <li><a href="19.html">第19章 时间敏感网络(TSN)</a></li>
+            <li><a href="20.html">第20章 汽车以太网</a></li>
+            <li><a href="21.html">第21章 单对以太网(SPE)</a></li>
+            <li><a href="22.html">第22章 虚拟化与Overlay网络</a></li>
+            <li><a href="23.html">第23章 Wireshark抓包分析实战</a></li>
+            <li><a href="24.html">第24章 网络性能测试与基准</a></li>
+            <li><a href="25.html">第25章 软件定义网络与以太网</a></li>
+            <li><a href="26.html">第26章 超以太网：UEC与AI网络</a></li>
+            <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
+            <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+
+        <h2>第10章 链路聚合与LACP</h2>
+
+        <p>大家好。上一章我们学习了VLAN和Trunk——Trunk链路允许在同一条物理链路上传输多个VLAN的流量。但这里有一个现实的问题：当你把两台核心交换机用一条千兆链路连接起来时，这条链路的带宽就只有1 Gbps。如果所有跨交换机的流量都挤在这条链路上，它很快会成为瓶颈。</p>
+
+        <p>你可能会说："那简单，多接几条线不就行了？"比如，在两台交换机之间接4条千兆网线——这不就有4 Gbps的带宽了吗？</p>
+
+        <p>可惜，如果没有特殊处理，在两条交换机之间接多条物理链路，STP会检测到环路并阻塞多余的链路——你只能使用其中一条，其余三条处于闲置状态。这显然不是我们要的效果。那有没有办法让多条物理链路同时工作，既不触发STP环路检测，又能叠加带宽？有的——这就是<strong>链路聚合（Link Aggregation）</strong>，也被称为<strong>端口聚合（Port Aggregation）</strong>或<strong>以太网捆绑（Ethernet Bonding）</strong>。</p>
+
+        <h3>10.1 为什么需要链路聚合</h3>
+
+        <p>链路聚合的目的可以用一句话概括：<strong>把多条物理链路捆绑成一条逻辑链路，同时增加带宽和提供冗余</strong>。它解决的是三个核心问题：</p>
+
+        <p><strong>第一，带宽叠加。</strong>4条千兆链路聚合后，逻辑链路的带宽为4 Gbps（在理想负载分担下）。相比升级到万兆接口（成本高，可能需要更换硬件），链路聚合是一种性价比极高的带宽提升方式。</p>
+
+        <p><strong>第二，链路冗余。</strong>如果聚合组中的某一条物理链路中断，流量会自动在其他正常的链路上重新分配。整个过程对上层协议是透明的——从IP层的视角看，逻辑链路依然存在，只是总带宽减少了。这种故障切换通常在毫秒级完成，远快于STP的收敛。</p>
+
+        <p><strong>第三，STP兼容。</strong>聚合组在STP的视角中被视为一条逻辑链路。也就是说，聚合组内的多条物理链路不会被STP阻塞——你可以在两台交换机之间接8条千兆线，全部处于活跃转发状态，而STP毫无怨言。</p>
+
+        <p>链路聚合技术最早由各个厂商独立实现（Cisco的EtherChannel、华为的Eth-Trunk等），后来在2000年被IEEE标准化为<strong>802.3ad</strong>，之后又被重新归类为<strong>802.1AX</strong>。标准化的链路聚合控制协议叫做<strong>LACP（Link Aggregation Control Protocol）</strong>。</p>
+
+        <h3>10.2 静态LAG：手工聚合</h3>
+
+        <p>最简单的链路聚合方式是<strong>静态LAG（Static Link Aggregation Group）</strong>——管理员手工将若干端口加入一个聚合组中。静态LAG不依赖任何协议来协商聚合参数，两端需要分别手工配置。</p>
+
+        <p>静态聚合的配置看起来大概是这样（以常见的交换机配置语言为例）：</p>
+
+        <pre><code>! 将端口GigabitEthernet 0/1 到 0/4 加入聚合组1
+interface Port-channel 1
+ description Link to Core-Switch-1
+ switchport mode trunk
+!
+interface GigabitEthernet 0/1
+ channel-group 1 mode on
+!
+interface GigabitEthernet 0/2
+ channel-group 1 mode on
+!
+interface GigabitEthernet 0/3
+ channel-group 1 mode on
+!
+interface GigabitEthernet 0/4
+ channel-group 1 mode on</code></pre>
+
+        <p>这里的关键是<code>mode on</code>——它告诉交换机"强制将这个端口加入聚合组，不需要LACP协商"。只要两端配置一致（端口数量、速率、双工模式、Trunk配置等），聚合就能正常工作。</p>
+
+        <p>但静态聚合有一个明显的缺点：如果某一端的配置有误（比如一端用了4条链路，另一端只配了3条），交换机不会给你任何错误提示——聚合组内的流量可能因为配置不一致而导致丢包。另外，静态聚合也无法检测链路对端的故障——如果对端设备的端口出现问题（比如硬件故障但物理层仍然UP），静态聚合不会自动将流量切走。这就是LACP出场的原因。</p>
+
+        <h3>10.3 LACP：让链路自己协商</h3>
+
+        <p><strong>LACP（Link Aggregation Control Protocol）</strong>是一个动态链路聚合协议。它允许两台设备自动协商哪些端口可以聚合、聚合参数是什么、以及如何处理链路故障。</p>
+
+        <p>LACP的工作原理可以分为三个步骤：</p>
+
+        <p><strong>第一步：LACP发现。</strong>启用LACP的端口会定期发送<strong>LACPDU</strong>（LACP数据单元），告诉对端"我在这里，我有这些能力（端口速率、全双工、MAC地址等）"。如果对端也支持LACP并配置了兼容的模式，双方就会进入协商阶段。</p>
+
+        <p><strong>第二步：参数匹配。</strong>LACP检查以下参数是否一致：端口速率、双工模式、Trunk配置、允许的VLAN列表等。只有所有参数都匹配的端口才能加入同一个聚合组。LACP还使用<strong>系统优先级（System Priority）</strong>和<strong>端口优先级（Port Priority）</strong>来确定哪一端是"主动方"，以及当硬件限制聚合组端口数量时哪些端口应该被加入。</p>
+
+        <p><strong>第三步：聚合建立与维护。</strong>协商成功后，端口加入聚合组。LACP会持续监控聚合组内的链路状态。如果发现某条链路故障或参数变化，LACP会自动将该链路从聚合组中移除，并将流量重新分配到其他链路上。</p>
+
+        <p>LACP有两种操作模式：</p>
+        <ul>
+            <li><strong>Active（主动）</strong>：端口主动发送LACPDU进行协商。至少有一端需要配置为Active模式。</li>
+            <li><strong>Passive（被动）</strong>：端口不主动发送LACPDU，但收到对端的LACPDU后会回应并参与协商。如果两端都配置为Passive，则聚合不会建立（因为没人先开口）。</li>
+        </ul>
+
+        <p>实际部署时，通常建议将一端配置为Active，另一端配置为Active或Passive都可以。Active-Active是最稳妥的组合，因为无论是哪一端先启动，协商都能顺利进行。</p>
+
+        <p>LACPDU的格式如下，它非常优雅地封装了所有协商所需的信息：</p>
+
+        <pre><code>+---------------------------+--------+---------------------------+
+| 字段                      | 字节数 | 说明                      |
++---------------------------+--------+---------------------------+
+| Destination MAC           | 6      | 01-80-C2-00-00-02         |
+|                           |        | (LACP组播MAC)             |
+| Source MAC                | 6      | 发送端MAC地址              |
+| EtherType                 | 2      | 0x8809 (Slow Protocols)   |
+| Subtype                   | 1      | 0x01 (LACP)               |
+| Version                   | 1      | 0x01                      |
+| TLV Type (Actor Info)     | 1      | 0x01                      |
+| Actor System Priority     | 2      | 系统优先级 (默认32768)    |
+| Actor System ID           | 6      | 系统MAC地址                |
+| Actor Key                 | 2      | 端口所在聚合组的标识       |
+| Actor Port Priority       | 2      | 端口优先级 (默认32768)    |
+| Actor Port                | 2      | 端口编号                   |
+| Actor State               | 1      | 状态标志位                 |
+| ... (Partner Info TLV)   | ...    | 对端信息 (格式同上)        |
+| Terminator TLV            | 2      | 0x0000                    |
++---------------------------+--------+---------------------------+</code></pre>
+
+        <p>Actor State这个字节包含8个标志位，每个代表一个状态：</p>
+
+        <table>
+            <tr>
+                <th>比特位</th>
+                <th>标志名</th>
+                <th>说明</th>
+            </tr>
+            <tr>
+                <td>0</td>
+                <td>LACP_Activity</td>
+                <td>1=Active, 0=Passive</td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>LACP_Timeout</td>
+                <td>1=Short Timeout (3秒), 0=Long Timeout (30秒)</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Aggregation</td>
+                <td>1=端口可聚合, 0=不可聚合</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Synchronization</td>
+                <td>1=端口已同步, 0=未同步</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>Collecting</td>
+                <td>1=端口正在接收帧</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>Distributing</td>
+                <td>1=端口正在发送帧</td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>Defaulted</td>
+                <td>1=使用默认Partner信息</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>Expired</td>
+                <td>1=超时过期</td>
+            </tr>
+        </table>
+
+        <h3>10.4 负载分担的哈希算法</h3>
+
+        <p>链路聚合的带宽叠加效果取决于流量如何在成员链路之间<strong>负载分担</strong>。负载分担的算法通常是基于<strong>哈希（Hash）</strong>的——交换机从帧的头部提取某些字段，计算出一个哈希值，然后根据哈希值选择一条成员链路。</p>
+
+        <p>常见的哈希输入字段包括：</p>
+        <ul>
+            <li><strong>基于MAC</strong>：源MAC地址 XOR 目的MAC地址 → 取模选择链路</li>
+            <li><strong>基于IP</strong>：源IP地址 XOR 目的IP地址 → 取模选择链路</li>
+            <li><strong>基于L4端口</strong>：源TCP/UDP端口 XOR 目的TCP/UDP端口 → 取模选择链路</li>
+            <li><strong>混合模式</strong>：源MAC + 目的MAC + 源IP + 目的IP + 源端口 + 目的端口的组合哈希</li>
+        </ul>
+
+        <p>哈希算法的选择对负载分担的效果影响很大。如果你的网络流量主要是少量的"大象流"（比如大文件传输、视频流），每条流的数据量巨大但流的数量很少，基于MAC或IP的哈希可能无法将这些流均匀地分配到多条链路上——因为哈希输入的变化太少。如果流量由大量"老鼠流"（比如Web请求、DNS查询）组成，哈希的统计均匀性通常会更好。</p>
+
+        <p>这里有一个重要的限制：<strong>同一条流的帧必须走同一条物理链路</strong>。什么叫同一条流？这里指的是具有相同哈希输入特征的帧序列。比如，基于源MAC+目的MAC哈希：主机A→主机B的所有帧都会被哈希到同一条链路上。这样做的好处是帧的<strong>保序（In-order Delivery）</strong>——如果同一个TCP连接的不同帧通过不同的物理链路到达对端，由于各链路的延迟可能不同，帧可能乱序到达，这对TCP的性能影响很大。</p>
+
+        <div class="warning">
+            <p><strong>真实案例</strong>：某视频监控平台的NVR（网络视频录像机）通过链路聚合连接到核心交换机。运维人员发现，明明4条千兆链路聚合了，但总带宽始终只有1.5 Gbps左右，远低于预期的4 Gbps。排查后发现，原因是哈希算法配置为基于"源MAC+目的MAC"，而NVR只有两个MAC地址（一个用于管理，一个用于数据传输），绝大多数视频流都是从NVR到存储服务器的。哈希值几乎不变，所有流量都挤在一条链路上。解决方案是将哈希算法改为"源IP+目的IP+源端口+目的端口"的四元组哈希——由于每个摄像机流的源端口不同，哈希分布变得均匀，总带宽提升到了3.6 Gbps。</p>
+        </div>
+
+        <h3>10.5 MC-LAG：跨设备的链路聚合</h3>
+
+        <p>链路聚合有一个先天的限制：<strong>聚合组中的所有物理端口必须在同一台交换机上</strong>。这是因为LACP的System ID是唯一的，无法将两台不同交换机上的端口加入同一个聚合组。这对于采用"双核心"架构的园区网络来说是个麻烦——服务器无法同时连接到两台核心交换机的端口并使用链路聚合的冗余优势。</p>
+
+        <p><strong>MC-LAG（Multi-Chassis Link Aggregation Group，跨设备链路聚合）</strong>解决了这个问题。MC-LAG允许将分布在两台独立交换机上的端口聚合到同一个逻辑链路中。服务器只需要配置一次LACP，同时连接到两台核心交换机，得到的是一条跨设备的逻辑聚合链路。</p>
+
+        <p>不同的厂商有不同的MC-LAG实现：Cisco的<strong>vPC（Virtual Port Channel）</strong>、华为的<strong>M-LAG</strong>、Juniper的<strong>MC-LAG</strong>。虽然实现细节不同，但核心思想一致：两台交换机通过一条特殊的<strong>keepalive链路</strong>（通常是专用的管理接口之间的连接）同步状态信息，对外表现为一台"虚拟交换机"。LACP的System ID由两台交换机构成的虚拟系统共享，所以服务器端的LACP聚合可以跨越这两台物理设备。</p>
+
+        <p>MC-LAG的优势非常明显：</p>
+        <ul>
+            <li><strong>高可用</strong>：任意一台交换机故障，服务器端的流量自动切换到另一台交换机</li>
+            <li><strong>无STP阻塞</strong>：因为两条上行链路属于同一个聚合组，STP不会阻塞任何一条</li>
+            <li><strong>带宽利用率翻倍</strong>：两条上行链路同时转发流量</li>
+        </ul>
+
+        <p>MC-LAG的缺点是配置复杂，需要仔细规划peer-link带宽、keepalive检测机制和双活防环策略。</p>
+
+        <div class="tip">
+            <p><strong>实用技巧</strong>：在配置LACP时，可以调整<strong>LACP速率</strong>（LACP Rate）来控制故障检测速度。默认的Long Timeout是30秒（每30秒发送一次LACPDU，连续3次丢失则认为链路故障，即90秒检测时间）。如果启用Fast Rate（Short Timeout），LACPDU每1秒发送一次，连续3次丢失则在约3秒内检测到故障。对于对故障切换时间敏感的场景（比如金融交易系统），建议启用Fast Rate。</p>
+        </div>
+
+        <h3>10.6 总结与预告</h3>
+
+        <p>这一章我们详细学习了链路聚合技术——从静态LAG到动态LACP，从哈希负载分担算法到跨设备的MC-LAG。链路聚合是构建高可用、高带宽以太网络的基础技术。它让你能够在两台交换机之间利用多条物理链路，同时享受带宽叠加和链路冗余的好处，而且完全兼容STP。</p>
+
+        <p>链路聚合解决了"带宽够不够宽"的问题，但它没有解决"网络拥塞时怎么办"的问题。当网络出现拥塞时，交换机需要决定哪些帧先发、哪些帧可以丢、哪些帧必须保。这就是<strong>服务质量（QoS）</strong>和<strong>流控（Flow Control）</strong>要解决的问题。下一章，我们将深入探讨以太网的流控机制——从传统的802.3x PAUSE帧到数据中心场景下的PFC（优先级流控），以及各种队列调度算法如何保证关键流量不丢包、不延迟。</p>
+
+        <div class="footer-nav">
+            <a href="09.html">← 上一章</a>
+            <a href="index.html">📖 返回目录</a>
+            <a href="11.html">下一章 →</a>
+        </div>
+
+    </div>
+</div>
+</div>
+</body>
+</html>
