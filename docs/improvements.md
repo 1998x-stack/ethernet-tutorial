@@ -1,0 +1,21 @@
+# Portfolio Engineering Improvements
+
+### 2026-11-05 04:09 UTC — ChatGPT Portfolio Iteration
+- Run ID: 20261105T040226Z-iritt1
+- Repo / Base SHA: 1998x-stack/ethernet-tutorial / 5a64cd62e6488a0d5b4409b4f2aa338f68c29d9f (default branch `main`)
+- Historical context: first initialization; verified `docs/improvements.md` returned GitHub 404 on `main` *before* reading/editing source. No previous entries, no open/closed PRs, no duplicate Agent PR; latest existing commit adds README (2026-08-18). Catalog historical snapshot dated 2026-11-03; repository identity and write permissions rechecked live.
+- Product problem & expected user value: README explicitly instructs opening `index.html` directly, but the 28-chapter catalog can stay empty or show fetch failure under `file://`. Users should be able to start reading offline without a server.
+- Engineering diagnosis & evidence: `index.html` previously called `fetch('courses.json')`, then rendered cards only inside the fulfilled promise. Local-file fetch is restricted by browser security policies; no fallback or pre-rendered cards existed. `courses.json` contains 28 chapters and all linked chapter HTML files exist.
+- Options & decision: P1 offline loading (benefit/correctness/evidence/verifiability 5/4/5/5 minus cost/risk 2/1 = **16**) chosen. P2 missing loading feedback (3/1/4/4 minus 1/1 = **10**), P3 link/metadata drift (3/2/4/3 minus 2/1 = **9**) deferred. Scope is a minimal local-file compatibility fix, not a framework/build migration.
+- Changes: `index.html` embeds an escaped JSON snapshot and reads it via `JSON.parse(...textContent)` rather than a cross-file fetch, preserving existing card render/link behavior and improving bad-data error wording; `tests/test_index_catalog.py` verifies JSON equality, 28 links, HTML safety and optional Chromium file-URL rendering; `tests/test_index_renderer.cjs` exercises normal, empty and malformed-data paths in an isolated Node VM; `README.md` documents sync contract and regression commands. `courses.json` and all 28 chapter files unchanged.
+- Validation:
+  - **A (executed local renderer verification):** `node --check verification/catalog-script.js && node verification/validate.cjs` passed with 28-card, link, empty and corrupt-JSON assertions on the extracted actual renderer JS. Its FNV-1a signature `e795be44` was verified against the GitHub-fetched script; synthetic metadata was used, not the complete checked-out HTML.
+  - **C (executed GitHub-source static assertions):** 10/10 checks passed comparing fetched branch HTML and `courses.json`: snapshot equality, 28 unique/existing chapter targets, no runtime fetch dependency, script-tag escaping, README/test presence, base unchanged and zero open duplicate PRs.
+  - **B (environment limitation):** local Chromium CLI `--headless --dump-dom file://...` timed out after 22 seconds on a reduced reproduction fixture; this does **not** establish success or failure of the full repository page.
+  - **D (written, not executed against complete checkout):** `python -m unittest discover -s tests -v` and `node --test tests/test_index_renderer.cjs`. GitHub connector exposes source and writes but does not provision a local checkout; this environment could not retrieve raw files through network DNS, so full-tree tests and true browser E2E remain outstanding.
+  - CI status for this change is not yet independently confirmed.
+- Security & regression review: no credentials, permissions, workflows, deployment or licensing altered; JSON `<` characters are escaped before embedding to avoid premature `</script>` termination. Offline content is a trusted, versioned repository snapshot; no remote input added. Changes limited to catalog entry, tests and docs.
+- Risk & rollback: `courses.json` and HTML snapshot can drift; the equality test makes drift detectable, but metadata maintenance requires two edits. Revert the branch commits or close the Draft PR; default branch and deployment are untouched.
+- Follow-up: run a clean checkout regression suite and independent real Chromium `file://` E2E during PR review; later evaluate a generated single-source catalog to remove duplicate maintenance.
+- Commit: 7e836ce64315543640d02201a39e4e8a6eaac6c0 (latest pre-history branch SHA; this history addition produces another commit)
+- PR: pending (will be filled when GitHub creates the Draft PR).
