@@ -73,4 +73,5 @@ ethernet-tutorial/
 
 ```bash
 python -m unittest discover -s tests -v
+node --test tests/test_index_renderer.cjs  # 可选：Node.js 18+，测试实际目录渲染逻辑
 ```
