@@ -17,5 +17,5 @@
 - Security & regression review: no credentials, permissions, workflows, deployment or licensing altered; JSON `<` characters are escaped before embedding to avoid premature `</script>` termination. Offline content is a trusted, versioned repository snapshot; no remote input added. Changes limited to catalog entry, tests and docs.
 - Risk & rollback: `courses.json` and HTML snapshot can drift; the equality test makes drift detectable, but metadata maintenance requires two edits. Revert the branch commits or close the Draft PR; default branch and deployment are untouched.
 - Follow-up: run a clean checkout regression suite and independent real Chromium `file://` E2E during PR review; later evaluate a generated single-source catalog to remove duplicate maintenance.
-- Commit: 7e836ce64315543640d02201a39e4e8a6eaac6c0 (latest pre-history branch SHA; this history addition produces another commit)
-- PR: pending (will be filled when GitHub creates the Draft PR).
+- Commit: 7e836ce64315543640d02201a39e4e8a6eaac6c0 (last code/docs SHA), 2bdeccf2c5c78dce035299d6d1ae5e29250c7190 (first history commit); PR head tracks the final audit-field update.
+- PR: https://github.com/1998x-stack/ethernet-tutorial/pull/1 (Draft, created 2026-11-05 04:09 UTC, not merged).
