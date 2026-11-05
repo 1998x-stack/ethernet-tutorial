@@ -65,3 +65,12 @@ ethernet-tutorial/
 
 ---
 *本课程由 `ethernet-tutorial/` 项目维护。*
+## 🛠️ 课程目录数据维护
+
+直接打开 `index.html`（`file://`）无需本地 HTTP 服务。为了让浏览器离线读取课程目录，页面内嵌了一份 `courses.json` 的 JSON 快照。修改章节名称、链接或主题时，必须**同步更新 `courses.json` 和 `index.html` 的 `embeddedCourses` 数据块**，不要把 JSON 改为运行时 `fetch`。
+
+可运行以下标准库回归检查验证两份数据一致、28 个章节链接可用；如果安装了 Chromium，还会自动测试 `file://` 页面能否渲染 28 张课程卡片：
+
+```bash
+python -m unittest discover -s tests -v
+```
