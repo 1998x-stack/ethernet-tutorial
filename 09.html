@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第9章 VLAN与802.1Q</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +45,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第9章 VLAN与802.1Q</h2>
+        <h1>第9章 VLAN与802.1Q</h1>
 
         <p>大家好，欢迎回到以太网通信课程。上一章我们讲了生成树协议如何通过阻塞冗余链路来消除环路——但STP有一个隐含的前提：整个网络是一个<strong>广播域</strong>。什么意思？就是说，任何一台主机发出的ARP广播、DHCP发现、NetBIOS名称解析等广播帧，会传遍网络中所有的交换机、所有的端口、所有的设备。在一个小型的办公网络里，这没什么问题。但在一个拥有几百台甚至几千台设备的园区网络中，广播流量会变成一个灾难。</p>
 
         <p>这一章我们要学的东西——<strong>VLAN（Virtual Local Area Network，虚拟局域网）</strong>——就是为了解决"广播域太大"这个问题而诞生的。VLAN可以说是现代交换网络中最基础也最重要的技术之一。你理解了VLAN，才算真正理解了交换机的灵魂。</p>
 
-        <h3>9.1 一个校园网被ARP广播瘫痪的故事</h3>
+        <h2>9.1 一个校园网被ARP广播瘫痪的故事</h2>
 
         <div class="warning">
             <p><strong>真实案例</strong>：201X年，某大学校园网在开学季突然大面积瘫痪。网络中心排查发现，核心交换机的CPU使用率持续在99%，端口的广播报文数量达到了每秒数万帧。进一步分析发现，罪魁祸首是一台学生宿舍里的个人电脑——这台机器中了ARP蠕虫病毒，以每秒几百个的速度向网络发送伪造的ARP请求。由于整个校园网在同一个广播域中（没有划分VLAN），这个ARP广播帧被交换机转发到了校园网的每一个角落——从教学楼到图书馆、从食堂到行政楼。最终，全网的终端设备都在处理这些无用的广播帧，正常的数据通信完全无法进行。网络中心的工程师最后不得不物理断开宿舍楼的接入交换机，才让校园网恢复了正常。事后，他们在核心交换机上划分了VLAN，不同楼宇之间通过三层路由通信。从此以后，即使某个VLAN内有广播风暴，其他VLAN也能正常工作。</p>
@@ -58,11 +62,31 @@
 
         <p>这个故事说明了什么？<strong>广播域需要被适当隔离。</strong>在没有VLAN的时代，隔离广播域的唯一办法是使用路由器——路由器不会转发广播帧，但路由器的端口数量有限，价格昂贵。VLAN的出现改变了这一切：它允许你在同一台交换机上创建多个相互隔离的逻辑网络。</p>
 
-        <h3>9.2 802.1Q标签：给以太网帧加上"身份证"</h3>
+        <h2>9.2 802.1Q标签：给以太网帧加上"身份证"</h2>
 
         <p>VLAN的核心机制是在以太网帧中插入一个<strong>标签（Tag）</strong>，用来标识这个帧属于哪个VLAN。这个标签由IEEE 802.1Q标准定义。我们来看看这个标签长什么样。</p>
 
         <p>802.1Q标签被插入到以太网帧的源MAC地址之后、EtherType/Length字段之前。它的总长度为<strong>4字节</strong>（32比特），结构如下：</p>
+
+        <figure>
+            <svg viewBox="0 0 700 210" role="img" aria-label="802.1Q 标签的 TPID、PCP、DEI、VID 字段位宽示意图">
+                <title>802.1Q 标签字段位宽</title>
+                <text x="30" y="28" font-size="13" font-weight="700" fill="#1e293b">802.1Q 标签（4 字节，共 32 比特）</text>
+                <rect x="30" y="44" width="640" height="46" rx="6" fill="#fae8ff" stroke="#e879f9"></rect>
+                <text x="350" y="73" text-anchor="middle" font-size="13" fill="#86198f">TPID = 0x8100（16 比特）</text>
+                <rect x="30" y="120" width="120" height="52" rx="6" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="90" y="142" text-anchor="middle" font-size="12" fill="#1e40af">PCP 3b</text>
+                <text x="90" y="160" text-anchor="middle" font-size="11" fill="#2563eb">优先级 0–7</text>
+                <rect x="150" y="120" width="40" height="52" rx="6" fill="#e0e7ff" stroke="#a5b4fc"></rect>
+                <text x="170" y="142" text-anchor="middle" font-size="11" fill="#3730a3">DEI</text>
+                <text x="170" y="160" text-anchor="middle" font-size="11" fill="#4338ca">1b</text>
+                <rect x="190" y="120" width="480" height="52" rx="6" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="430" y="142" text-anchor="middle" font-size="12" fill="#166534">VID — VLAN 标识符（12 比特）</text>
+                <text x="430" y="160" text-anchor="middle" font-size="11" fill="#15803d">0x000 未标记 · 0xFFF 保留 · 实际可用 1–4094</text>
+                <text x="30" y="196" font-size="11" fill="#475569">比特位宽按比例绘制：PCP 3 位 + DEI 1 位 + VID 12 位 = 16 位的 TCI，加上 16 位 TPID 恰好 4 字节。</text>
+            </svg>
+            <figcaption>802.1Q 标签的两个 16 比特字：TPID 固定为 0x8100 用于标识标签帧，TCI 由 3 位 PCP 优先级、1 位 DEI 和 12 位 VID 组成。</figcaption>
+        </figure>
 
         <pre><code>+--------+----+----+------------------+
 |  TPID   | PCP|DEI |       VID        |
@@ -86,7 +110,7 @@
             <p><strong>实用技巧</strong>：在Wireshark中抓包时，如果一个以太网帧带有VLAN标签，你会看到Ethernet II头部后面多了一个"802.1Q Virtual LAN"协议层。展开它就能看到VID、PCP和DEI三个字段。这是快速验证VLAN配置正确与否的最直接方法。如果你发现某个帧的VLAN标签不符合预期，那就说明中间的交换机可能做了错误的标签操作。</p>
         </div>
 
-        <h3>9.3 Access端口、Trunk端口与Hybrid端口</h3>
+        <h2>9.3 Access端口、Trunk端口与Hybrid端口</h2>
 
         <p>交换机端口根据处理VLAN标签的方式，可以分为三种类型：<strong>Access端口</strong>、<strong>Trunk端口</strong>和<strong>Hybrid端口</strong>。理解这三种端口的区别是VLAN配置的基础。</p>
 
@@ -141,7 +165,7 @@
             </tr>
         </table>
 
-        <h3>9.4 Native VLAN与VLAN 1的安全问题</h3>
+        <h2>9.4 Native VLAN与VLAN 1的安全问题</h2>
 
         <p>Native VLAN是Trunk端口上的一个重要概念。在802.1Q中，Trunk端口会为<strong>一个特定的VLAN</strong>（默认是VLAN 1）发送不带标签的帧——这个VLAN就是<strong>Native VLAN</strong>。为什么要有Native VLAN？主要是为了向后兼容：一些不支持802.1Q的旧设备可以从Trunk链路接收Native VLAN的帧而不被丢弃。</p>
 
@@ -153,7 +177,7 @@
             <p><strong>安全建议</strong>：在生产网络中，VLAN 1 应该被视为一个"不信任"的VLAN。不要将任何用户设备放在VLAN 1中，不要通过VLAN 1来管理交换机（即管理IP地址不要配在VLAN 1接口上）。很多网络入侵的初始突破口就是攻击者进入了VLAN 1，然后利用VLAN跳跃攻击进入了管理网络。记住：VLAN 1不是你的朋友，它是攻击者的好朋友。</p>
         </div>
 
-        <h3>9.5 QinQ：运营商的"VLAN套娃"</h3>
+        <h2>9.5 QinQ：运营商的"VLAN套娃"</h2>
 
         <p>4094个VLAN听起来很多，但对于运营商级别的网络来说，这是远远不够的。想象一下，一家运营商可能需要为成千上万个企业客户提供以太网专线服务，每个客户都需要自己的VLAN隔离——4094个VLAN几天就用完了。</p>
 
@@ -173,7 +197,7 @@
 
         <p>QinQ的优点很明显：扩展了VLAN数量、对客户透明、可以复用现有的802.1Q硬件。但它也有缺点：帧变得更长（最多可能达到1522+4=1526字节），而且丧失了C-Tag中的PCP优先级信息（因为运营商只能看到S-Tag的PCP）。</p>
 
-        <h3>9.6 语音VLAN与LLDP-MED自动配置</h3>
+        <h2>9.6 语音VLAN与LLDP-MED自动配置</h2>
 
         <p>在企业网络中，IP电话是一个特殊的终端设备。电话通常连接在用户的PC和交换机之间（PC串联在电话后面），电话需要自己的VLAN（语音VLAN），而PC使用另一个VLAN（数据VLAN）。问题来了：电话怎么知道它应该使用哪个VLAN？</p>
 
@@ -189,7 +213,7 @@
 
         <p>很多运维事故都是因为语音VLAN配置不当导致的。比如，没有配置LLDP-MED导致电话获取不到正确的VLAN信息，或者语音VLAN的QoS优先级没有配置导致通话质量差。在大型企业中，IP电话的排障常常是网络工程师最头疼的问题之一——因为问题可能出在VLAN配置、LLDP协商、DHCP选项、或QoS策略中的任何一个环节。</p>
 
-        <h3>9.7 PVID配置错误：一次真实的"惨案"</h3>
+        <h2>9.7 PVID配置错误：一次真实的"惨案"</h2>
 
         <div class="warning">
             <p><strong>真实案例</strong>：某金融公司在进行一次交换机替换时，工程师将新交换机的端口配置为Trunk模式并连接到核心交换机，但忘记修改端口的PVID（默认PVID=1）。而核心交换机的Trunk端口Native VLAN配置为VLAN 99。结果，新交换机发往核心交换机的BPDU、CDP/LLDP等二层控制帧都打上了VLAN 1的标签（因为PVID=1），而核心交换机期望这些帧是"去标签"的（因为Native VLAN=99）。于是，核心交换机把这些帧当成了VLAN 1的普通数据帧丢弃了（因为Trunk端口没有允许VLAN 1通过）。最终，新交换机无法成功建立STP邻居，STP认为出现了环路而阻塞了所有端口，导致整个机柜的网络中断近两个小时。</p>
@@ -197,7 +221,7 @@
 
         <p>这个故事的教训是：修改端口模式后，一定要检查PVID/Native VLAN的一致性。对Trunk端口来说，PVID应该等于对端的Native VLAN。如果Trunk端口的PVID和Native VLAN不匹配，就会导致控制帧被错误标记或丢弃。很多"奇怪"的二层连通性问题，根因都在这个细节上。</p>
 
-        <h3>9.8 总结与预告</h3>
+        <h2>9.8 总结与预告</h2>
 
         <p>这一章我们深入探讨了VLAN——现代交换网络最重要的技术之一。我们从广播域隔离的需求出发，分析了802.1Q标签的四个字段，对比了Access、Trunk、Hybrid三种端口类型的行为差异，讨论了Native VLAN的安全风险，了解了运营级网络中的QinQ技术，还看了一个PVID配置错误的真实案例。你现在应该能够理解：VLAN的本质是在同一个物理网络上创建多个逻辑隔离的二层网络，每个VLAN是一个独立的广播域。</p>
 
@@ -209,7 +233,7 @@
             <a href="10.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
