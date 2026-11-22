@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第3章 OSI模型与以太网的位置</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +47,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第3章 OSI模型与以太网的位置</h2>
+        <h1>第3章 OSI模型与以太网的位置</h1>
 
         <p>大家好，我是你们的讲师。上一章我们回顾了以太网从粗缆到光纤、从10 Mbps到800 Gbps的进化史诗。但这里有一个问题：以太网到底属于网络世界的"哪一层"？你可能听过"以太网是链路层技术"这个说法，但为什么我们买网卡的时候还要关心"PHY芯片"？为什么交换机被称为"二层设备"？</p>
 
         <p>要回答这些问题，我们就必须引入网络世界最经典的分层模型——<strong>OSI（Open Systems Interconnection）参考模型</strong>。以太网在这个七层模型中有着一个非常特殊的位置：它横跨了最底部的两层。理解这个位置，你就理解了以太网的设计逻辑、它的局限性和它的能力边界。</p>
 
-        <h3>3.1 OSI七层模型：网络通信的"宪法"</h3>
+        <h2>3.1 OSI七层模型：网络通信的"宪法"</h2>
 
         <p>OSI模型是国际标准化组织（ISO）在1984年发布的网络通信参考模型。虽然互联网实际使用的是TCP/IP四层模型，但OSI模型作为教学工具和设计框架的影响力至今无人能及。它的核心理念是<strong>分层解耦</strong>——把复杂的通信过程分解为七个层次，每层只负责特定功能，层与层之间通过明确的接口交互。这样做的最大好处是：任何一层的技术发生变化，都不影响其他层。</p>
 
@@ -72,7 +78,7 @@
             <p><strong>一个有用的记忆口诀：</strong>很多网络工程师靠一句话记住七层顺序（从上到下）："All People Seem To Need Data Processing"——A(应用)P(表示)S(会话)T(传输)N(网络)D(数据链路)P(物理)。对应的中文口诀是："应表会传网数物"，从应用层到物理层。</p>
         </div>
 
-        <h3>3.2 以太网横跨物理层和数据链路层</h3>
+        <h2>3.2 以太网横跨物理层和数据链路层</h2>
 
         <p>以太网的独特之处在于：它是一个横跨物理层和数据链路层的技术体系。我们平时说的"以太网"实际上包含了两个子层的标准：</p>
 
@@ -135,7 +141,7 @@
             </tr>
         </table>
 
-        <h3>3.3 LLC子层与MAC子层的分工</h3>
+        <h2>3.3 LLC子层与MAC子层的分工</h2>
 
         <p>在OSI模型的数据链路层内部，IEEE 802标准又进一步把它划分为两个子层：</p>
 
@@ -145,9 +151,43 @@
 
         <p>有趣的是，在DIX Ethernet II帧格式中，并没有LLC的DSAP/SSAP字段，取而代之的是一个2字节的<b>EtherType</b>字段（如0x0800代表IP协议，0x0806代表ARP协议）。EtherType本质上就是另一种形式的"服务标识符"——直接告诉MAC层上层运行的是什么协议，而不需要通过LLC来间接识别。这也是DIX和IEEE 802.3之间最核心的差异之一。我们在第4章将专门针对帧格式的差异进行详细对比。</p>
 
-        <h3>3.4 从应用层到线缆：一封"信"的旅程</h3>
+        <h2>3.4 从应用层到线缆：一封"信"的旅程</h2>
 
         <p>理解了这个分层模型后，让我们跟踪一下数据从发送到接收的完整旅程——从浏览器点击"发送"到网线中电信号的传输。这个过程有时被称为"数据封装"或"协议栈下行"。以下是具体步骤：</p>
+
+        <figure>
+            <svg viewBox="0 0 700 250" role="img" aria-label="数据自上而下逐层封装为 TCP 段、IP 包、以太网帧与物理信号的示意图">
+                <title>逐层封装示意</title>
+                <rect x="30" y="36" width="130" height="30" rx="5" fill="#e2e8f0" stroke="#94a3b8"></rect>
+                <text x="95" y="55" text-anchor="middle" font-size="11" fill="#334155">HTTP 数据</text>
+                <text x="470" y="55" font-size="11" fill="#475569">应用层</text>
+                <rect x="30" y="84" width="90" height="30" rx="5" fill="#bae6fd" stroke="#38bdf8"></rect>
+                <text x="75" y="103" text-anchor="middle" font-size="11" fill="#0c4a6e">TCP 头</text>
+                <rect x="120" y="84" width="130" height="30" rx="5" fill="#e2e8f0" stroke="#94a3b8"></rect>
+                <text x="185" y="103" text-anchor="middle" font-size="11" fill="#334155">HTTP 数据</text>
+                <text x="470" y="103" font-size="11" fill="#475569">传输层</text>
+                <rect x="30" y="132" width="90" height="30" rx="5" fill="#c7d2fe" stroke="#818cf8"></rect>
+                <text x="75" y="151" text-anchor="middle" font-size="11" fill="#3730a3">IP 头</text>
+                <rect x="120" y="132" width="60" height="30" rx="5" fill="#bae6fd" stroke="#38bdf8"></rect>
+                <text x="150" y="151" text-anchor="middle" font-size="11" fill="#0c4a6e">TCP</text>
+                <rect x="180" y="132" width="130" height="30" rx="5" fill="#e2e8f0" stroke="#94a3b8"></rect>
+                <text x="245" y="151" text-anchor="middle" font-size="11" fill="#334155">HTTP 数据</text>
+                <text x="470" y="151" font-size="11" fill="#475569">网络层</text>
+                <rect x="30" y="180" width="150" height="30" rx="5" fill="#fde68a" stroke="#fbbf24"></rect>
+                <text x="105" y="199" text-anchor="middle" font-size="11" fill="#78350f">以太网帧头（MAC）</text>
+                <rect x="180" y="180" width="60" height="30" rx="5" fill="#c7d2fe" stroke="#818cf8"></rect>
+                <text x="210" y="199" text-anchor="middle" font-size="11" fill="#3730a3">IP</text>
+                <rect x="240" y="180" width="50" height="30" rx="5" fill="#bae6fd" stroke="#38bdf8"></rect>
+                <text x="265" y="199" text-anchor="middle" font-size="11" fill="#0c4a6e">TCP</text>
+                <rect x="290" y="180" width="110" height="30" rx="5" fill="#e2e8f0" stroke="#94a3b8"></rect>
+                <text x="345" y="199" text-anchor="middle" font-size="11" fill="#334155">HTTP 数据</text>
+                <rect x="400" y="180" width="50" height="30" rx="5" fill="#fed7aa" stroke="#fb923c"></rect>
+                <text x="425" y="199" text-anchor="middle" font-size="11" fill="#9a3412">FCS</text>
+                <text x="470" y="199" font-size="11" fill="#475569">数据链路层</text>
+                <text x="30" y="238" font-size="11" fill="#475569">物理层：把整个帧编码为电/光信号送出（含前导码与 SFD，不参与 MAC 帧长计算）。</text>
+            </svg>
+            <figcaption>逐层向下，每一层都在已有数据前“接上”自己的头部：TCP 段、IP 包、以太网帧依次变宽，到了物理层整体化为线缆上的信号。</figcaption>
+        </figure>
 
         <p>你打开浏览器访问 www.example.com，按下回车键。浏览器构造了一个HTTP GET请求。这个请求首先被交给传输层（第4层），TCP协议将它封装为一个TCP段（Segment），加上源端口（随机高端口）和目标端口（80）的信息。然后，TCP段被交给网络层（第3层），IP协议将其封装为一个IP包（Packet），加上源IP地址（你的计算机）和目标IP地址（服务器，通过DNS解析得到）。</p>
 
@@ -169,7 +209,7 @@
 |  Physical (PHY)  |  电信号: 01010101... (通过Cat6网线传输)
 +-----------------+</code></pre>
 
-        <h3>3.5 一个真实的踩坑故事：MTU不匹配导致的"幽灵丢包"</h3>
+        <h2>3.5 一个真实的踩坑故事：MTU不匹配导致的"幽灵丢包"</h2>
 
         <p>前面提到的"分层解耦"理论虽然完美，但在实际运维中，层与层之间的交互往往会暴露出一些"灰色地带"。我自己就经历过一个印象深刻的案例。</p>
 
@@ -193,7 +233,7 @@
             <a href="04.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
