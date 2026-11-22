@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第12章 组播与IGMP Snooping</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +47,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第12章 组播与IGMP Snooping</h2>
+        <h1>第12章 组播与IGMP Snooping</h1>
 
         <p>大家好。到目前为止，我们讨论的以太网通信模式主要是两种：<strong>单播（Unicast）</strong>——一对一通信；<strong>广播（Broadcast）</strong>——一对所有通信。但这两种模式都有各自的局限性。单播的问题是：如果同一份数据要发给100个接收者（比如一场直播），源主机需要发送100份相同的数据，带宽消耗巨大。广播的问题是：它把数据发给所有人，包括那些根本不感兴趣的人——浪费带宽，且带来安全隐患。</p>
 
         <p>那么有没有一种"中间模式"——数据只发给那些明确表示"我需要"的接收者？这就是<strong>组播（Multicast）</strong>。它是"一对多"的通信模式，非常高效——源主机只需要发送一份数据，网络设备负责在需要的时候复制这份数据并分发给多个接收者。</p>
 
-        <h3>12.1 组播的典型应用</h3>
+        <h2>12.1 组播的典型应用</h2>
 
         <p>组播技术在现代网络中有着广泛的应用：</p>
 
@@ -64,7 +70,7 @@
 
         <p>组播模型的精妙之处在于"<strong>源发送一次，网络按需复制</strong>"。实现这个模型需要解决两个问题：一是接收者如何告诉网络"我想加入这个组"（IGMP/MLD负责）；二是交换机如何知道哪些端口有感兴趣的接收者，从而在正确的端口上复制帧（IGMP Snooping负责）。</p>
 
-        <h3>12.2 IP组播到MAC组播的映射</h3>
+        <h2>12.2 IP组播到MAC组播的映射</h2>
 
         <p>在IP网络中，组播使用D类IP地址（224.0.0.0 ~ 239.255.255.255），范围是224.0.0.0/4。当IP组播包封装到以太网帧中时，目的MAC地址需要反映这个组播IP地址。IANA将MAC地址范围<strong>01-00-5E-00-00-00 ~ 01-00-5E-7F-FF-FF</strong>分配给了IP组播。</p>
 
@@ -85,11 +91,36 @@ MAC地址: 01-00-5E-40-00-01
 二进制IP最后23位: 00000 00000000 00000001
 MAC地址: 01-00-5E-00-00-01</code></pre>
 
-        <p>注意：上面的公式中，239.192.0.1和224.0.0.1的最后23位是相同的吗？不是的！224.0.0.1的二进制是11100000.00000000.00000000.00000001，后23位是 <code>0000000.00000000.00000001</code>。239.192.0.1的二进制是11101111.11000000.00000000.00000001，后23位是 <code>1000000.00000000.00000001</code>。所以它们映射到不同的MAC地址。</p>
+        <figure>
+            <svg viewBox="0 0 700 260" role="img" aria-label="IPv4 组播地址低 23 位映射到以太网组播 MAC 的位对应关系图">
+                <title>IP 组播到 MAC 组播的位映射</title>
+                <text x="30" y="26" font-size="13" font-weight="700" fill="#1e293b">IPv4 D 类组播地址（32 位） → 以太网组播 MAC（48 位）</text>
+                <text x="30" y="50" font-size="11" fill="#475569">IPv4 组播地址</text>
+                <rect x="30" y="56" width="80" height="46" rx="6" fill="#e2e8f0" stroke="#94a3b8"></rect>
+                <text x="70" y="84" text-anchor="middle" font-size="12" fill="#334155">1110</text>
+                <rect x="110" y="56" width="100" height="46" rx="6" fill="#fee2e2" stroke="#f87171"></rect>
+                <text x="160" y="78" text-anchor="middle" font-size="11" fill="#991b1b">高 5 位</text>
+                <text x="160" y="92" text-anchor="middle" font-size="10" fill="#b91c1c">丢弃</text>
+                <rect x="210" y="56" width="460" height="46" rx="6" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="440" y="84" text-anchor="middle" font-size="12" fill="#166534">低 23 位（复制到 MAC）</text>
+                <text x="30" y="140" font-size="11" fill="#475569">以太网组播 MAC</text>
+                <text x="360" y="140" font-size="10" fill="#64748b">↑ 第 24 位固定为 0</text>
+                <rect x="30" y="146" width="320" height="46" rx="6" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="190" y="174" text-anchor="middle" font-size="12" fill="#1e40af">01-00-5E（固定前缀，24 位）</text>
+                <rect x="350" y="146" width="15" height="46" rx="3" fill="#e2e8f0" stroke="#94a3b8"></rect>
+                <rect x="365" y="146" width="305" height="46" rx="6" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="517" y="174" text-anchor="middle" font-size="12" fill="#166534">IP 低 23 位</text>
+                <line x1="500" y1="102" x2="500" y2="144" stroke="#4ade80" stroke-width="2" stroke-dasharray="5 4"></line>
+                <path d="M500,144 L495,134 L505,134 z" fill="#4ade80"></path>
+            </svg>
+            <figcaption>IP 组播低 23 位直接映射到 MAC 后 23 位：D 类地址高 4 位（1110）与随后的 5 位被丢弃，因此 2⁵ = 32 个 IP 组播地址会折叠到同一个 MAC 组播地址。</figcaption>
+        </figure>
+
+        <p>注意：上面的公式中，239.192.0.1 和 224.0.0.1 的最后 23 位是相同的吗？不是的！224.0.0.1 的二进制是11100000.00000000.00000000.00000001，后23位是 <code>0000000.00000000.00000001</code>。239.192.0.1的二进制是11101111.11000000.00000000.00000001，后23位是 <code>1000000.00000000.00000001</code>。所以它们映射到不同的MAC地址。</p>
 
         <p>但这里有一个关键问题：IP组播地址有28位可变位（D类地址的高4位固定为1110），而MAC组播地址只映射了23位。这意味着<strong>32个不同的IP组播地址会映射到同一个MAC组播地址</strong>（2的5次方=32）。这就是著名的"<strong>23位映射陷阱</strong>"。</p>
 
-        <h3>12.3 23位映射陷阱：1:32的地址重叠</h3>
+        <h2>12.3 23位映射陷阱：1:32的地址重叠</h2>
 
         <p>由于IP组播地址有28位可变化，而MAC组播地址只引入了23位映射，丢掉了IP地址的高5位。这意味着同一个MAC组播地址对应着32个不同的IP组播地址。</p>
 
@@ -107,7 +138,7 @@ MAC地址: 01-00-5E-00-00-01</code></pre>
 
         <p>解决这个问题的方法是在交换机上启用<strong>IGMP Snooping</strong>——它让交换机不再只依赖MAC地址，而是"偷看"IGMP报文中的IP组播地址，从而精确地知道哪个主机订阅了哪个具体的IP组播组。</p>
 
-        <h3>12.4 IGMP：主机与路由器之间的"组播语言"</h3>
+        <h2>12.4 IGMP：主机与路由器之间的"组播语言"</h2>
 
         <p><strong>IGMP（Internet Group Management Protocol，互联网组管理协议）</strong>是IP组播体系中的核心协议之一。它运行在<strong>主机和最后一跳路由器</strong>之间，用于主机通知路由器"我想加入这个组播组"或者"我想离开这个组"。IGMP有三个版本，我们来看它们之间的差异。</p>
 
@@ -170,7 +201,7 @@ MAC地址: 01-00-5E-00-00-01</code></pre>
 
         <p>对于IPv6网络，<strong>MLD（Multicast Listener Discovery，组播侦听发现）</strong>是IGMP的IPv6版本。MLDv1对应于IGMPv2，MLDv2对应于IGMPv3。它们的功能基本一致，只是适配了IPv6的地址格式和ICMPv6报文格式。</p>
 
-        <h3>12.5 IGMP Snooping：交换机偷看的"秘密"</h3>
+        <h2>12.5 IGMP Snooping：交换机偷看的"秘密"</h2>
 
         <p>现在问题来了：IGMP是主机和路由器之间的协议，交换机（工作在二层）怎么会知道IGMP的内容呢？答案是：<strong>IGMP Snooping</strong>（IGMP窥探）。</p>
 
@@ -199,7 +230,7 @@ MAC地址: 01-00-5E-00-00-01</code></pre>
             <p><strong>真实案例</strong>：某酒店部署了IPTV系统，每间客房通过IPTV机顶盒连接到交换机。系统上线后频繁出现"换台卡顿"和"花屏"的投诉。排查发现，交换机没有启用IGMP Snooping，所有组播流都在所有端口上泛洪。更糟糕的是，由于没有配置Immediate Leave，机顶盒在离开组播组时，交换机还要额外等待几秒钟确认是否有其他成员——导致频道切换时间长达5~8秒。启用IGMP Snooping和Immediate Leave后，频道切换时间降到了1秒以内。</p>
         </div>
 
-        <h3>12.6 组播地址重叠导致IPTV卡顿</h3>
+        <h2>12.6 组播地址重叠导致IPTV卡顿</h2>
 
         <div class="highlight">
             <p><strong>真实案例</strong>：某广电运营商收到大量用户投诉，反映某些频道在特定时间段出现周期性卡顿。技术团队在机顶盒和接入网络上排查了数周，最终定位到问题出在组播地址重叠上。运营商将多个频道配置在不同的IP组播地址上，但这些地址恰好映射到了<strong>同一个MAC组播地址</strong>。由于当时的接入交换机只支持基于MAC地址的IGMP Snooping（而不是基于IP地址），交换机会把两个频道的流量都发送到订阅了其中一个频道的端口上。机顶盒不得不处理大量"不感兴趣"的组播帧，导致CPU占用过高，解码不及时，最终表现为画面卡顿。升级到支持"基于IP组播地址"的IGMP Snooping固件后，问题得到解决。</p>
@@ -207,7 +238,7 @@ MAC地址: 01-00-5E-00-00-01</code></pre>
 
         <p>这个案例说明了两个重要的教训：第一，<strong>组播地址规划必须考虑MAC映射的重叠问题</strong>，尽量选择那些在低23位上不冲突的IP组播地址；第二，<strong>IGMP Snooping的实现质量很重要</strong>——低端交换机可能只做MAC级别的过滤，无法区分映射到同一MAC地址的不同IP组播流。</p>
 
-        <h3>12.7 总结与预告</h3>
+        <h2>12.7 总结与预告</h2>
 
         <p>这一章我们学习了IP组播在以太网中的工作机制。从IP组播到MAC组播地址的23位映射及其重叠陷阱，到IGMP的三个版本演进，再到IGMP Snooping如何让交换机精确转发组播流量——我们现在对组播有了一个完整的认识。组播是一种高效的"一对多"通信模式，既避免了单播的带宽浪费，又避免了广播的"无差别轰炸"。</p>
 
@@ -219,7 +250,7 @@ MAC地址: 01-00-5E-00-00-01</code></pre>
             <a href="13.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
