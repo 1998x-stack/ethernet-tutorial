@@ -62,7 +62,11 @@ body {
 }
 
 /* === Main Content === */
-.main-content { padding: 30px 35px; background: white; }
+.main-content { padding: 30px 35px; background: white; min-width: 0; }
+
+/* Grid/flex items must be allowed to shrink so wide <pre> art scrolls instead of widening the page. */
+.container > * { min-width: 0; }
+pre { max-width: 100%; }
 
 /* === Typography === */
 h2 {
