@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第5章 MAC地址与寻址机制</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +47,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第5章 MAC地址与寻址机制</h2>
+        <h1>第5章 MAC地址与寻址机制</h1>
 
         <p>大家好，我是你们的讲师。上一章我们深入分析了以太网帧的每一个字段——从7字节的前导码到4字节的FCS校验和。其中有一个字段我们看到过很多次但没有深入讨论，那就是6字节的MAC地址。你可能会觉得：MAC地址不就是网卡上的一个硬编码编号吗？有什么好讲的？</p>
 
         <p>嗯，表面上确实是这样——"00:16:3E:XX:XX:XX"这种格式，谁都会看。但MAC地址背后隐藏了一整套寻址哲学：如何在全球范围内保证地址的唯一性？交换机如何"学习"地址并做出转发决策？为什么有单播、组播、广播三种类型的MAC地址？这些看似简单的概念背后，是以太网能够高效运行的关键。这一章我们就来把这些"表面知识"下的深层原理弄明白。</p>
 
-        <h3>5.1 MAC地址的结构</h3>
+        <h2>5.1 MAC地址的结构</h2>
 
         <p>一个MAC地址由48位（6字节）组成，通常表示为12个十六进制数，分组书写：</p>
 
@@ -72,6 +78,42 @@
   第1字节的LSB (bit 0) = I/G 位: 0=单播, 1=组播
   第1字节的bit 1     = U/L 位: 0=全局唯一, 1=本地管理</code></pre>
 
+        <figure>
+            <svg viewBox="0 0 700 200" role="img" aria-label="48 位 MAC 地址的 OUI、NIC 字段与 I_G、U_L 标志位示意图">
+                <title>MAC 地址结构</title>
+                <text x="40" y="22" font-size="13" font-weight="700" fill="#1e293b">MAC 地址 = 6 字节（48 位），写作 12 个十六进制数</text>
+                <line x1="40" y1="52" x2="340" y2="52" stroke="#60a5fa" stroke-width="2"></line>
+                <line x1="40" y1="46" x2="40" y2="58" stroke="#60a5fa" stroke-width="2"></line>
+                <line x1="340" y1="46" x2="340" y2="58" stroke="#60a5fa" stroke-width="2"></line>
+                <text x="190" y="40" text-anchor="middle" font-size="12" fill="#1e40af">OUI（24 位，厂商）</text>
+                <line x1="340" y1="52" x2="640" y2="52" stroke="#4ade80" stroke-width="2"></line>
+                <line x1="640" y1="46" x2="640" y2="58" stroke="#4ade80" stroke-width="2"></line>
+                <text x="490" y="40" text-anchor="middle" font-size="12" fill="#166534">NIC 特定（24 位，设备）</text>
+                <rect x="40" y="62" width="100" height="54" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="90" y="94" text-anchor="middle" font-size="17" font-weight="700" fill="#1e40af">00</text>
+                <text x="90" y="109" text-anchor="middle" font-size="9" fill="#2563eb">字节 1</text>
+                <rect x="140" y="62" width="100" height="54" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="190" y="94" text-anchor="middle" font-size="17" font-weight="700" fill="#1e40af">16</text>
+                <text x="190" y="109" text-anchor="middle" font-size="9" fill="#2563eb">字节 2</text>
+                <rect x="240" y="62" width="100" height="54" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="290" y="94" text-anchor="middle" font-size="17" font-weight="700" fill="#1e40af">3E</text>
+                <text x="290" y="109" text-anchor="middle" font-size="9" fill="#2563eb">字节 3</text>
+                <rect x="340" y="62" width="100" height="54" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="390" y="94" text-anchor="middle" font-size="17" font-weight="700" fill="#166534">12</text>
+                <text x="390" y="109" text-anchor="middle" font-size="9" fill="#15803d">字节 4</text>
+                <rect x="440" y="62" width="100" height="54" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="490" y="94" text-anchor="middle" font-size="17" font-weight="700" fill="#166534">34</text>
+                <text x="490" y="109" text-anchor="middle" font-size="9" fill="#15803d">字节 5</text>
+                <rect x="540" y="62" width="100" height="54" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="590" y="94" text-anchor="middle" font-size="17" font-weight="700" fill="#166534">56</text>
+                <text x="590" y="109" text-anchor="middle" font-size="9" fill="#15803d">字节 6</text>
+                <text x="40" y="145" font-size="12" fill="#b45309">字节 1 的两个低位标志（LSB 在前发送）：</text>
+                <text x="40" y="166" font-size="12" fill="#1e293b">bit 0 = I/G：0 单播 · 1 组播</text>
+                <text x="40" y="186" font-size="12" fill="#1e293b">bit 1 = U/L：0 全球唯一 · 1 本地管理</text>
+            </svg>
+            <figcaption>48 位 MAC 地址的前 24 位是 IEEE 分配的 OUI，后 24 位由厂商自行编号；字节 1 的最低两位分别是单播/组播标志与全球/本地标志。</figcaption>
+        </figure>
+
         <p><b>前24位（3字节）</b>被称为<b>OUI（Organizationally Unique Identifier，组织唯一标识符）</b>，由IEEE注册管理机构（IEEE Registration Authority）分配给硬件制造商。每个制造商向IEEE缴纳费用后，可以获得一个或多个OUI。例如，Intel的OUI之一是00:16:3E，Cisco的OUI之一是00:1A:A1，Apple的OUI之一是00:1B:63。</p>
 
         <p><b>后24位（3字节）</b>是<b>NIC特定部分</b>，由制造商自行分配。制造商需要保证在同一OUI下，每个设备的NIC特定部分不重复。一个OUI可以分配2^24 ≈ 1677万个独立地址，可以满足大多数制造商的产能需求。但像Intel、Cisco、Huawei这样的大型厂商，由于出货量巨大，通常需要申请多个OUI。</p>
@@ -80,7 +122,7 @@
             <p><strong>无意义中的有意义：</strong>MAC地址的"全球唯一性"并不像看上去那么坚固。一方面，存在一些协议（如Linux的IP alias、VMware虚拟机的虚拟网卡）允许用户自定义MAC地址，这就可能造成重复。另一方面，在虚拟化环境中，虚拟机的MAC地址是由Hypervisor生成的，理论上不同的Hypervisor可能生成相同的地址，尽管厂商都极力避免这种情况。此外，还有一些"本地管理地址"（U/L位为1，如02:XX:XX:XX:XX:XX），适用于不会与外部网络直连的内部网络设备。在这些地址范围内，重复的风险由管理员自行承担。</p>
         </div>
 
-        <h3>5.2 单播、组播与广播</h3>
+        <h2>5.2 单播、组播与广播</h2>
 
         <p>MAC地址的第一字节的最低有效位（即bit 0，称为<b>I/G位</b>——Individual/Group）用于区分地址类型：</p>
 
@@ -94,7 +136,7 @@
 
         <p>我们可以用信件的类比来理解：单播就像写有具体收件人姓名和地址的普通信件——邮递员知道送给谁。组播就像一份杂志订阅——所有订阅者都会收到。广播就像在广场上张贴告示——所有人都能看到。</p>
 
-        <h3>5.3 MAC地址表的自学习机制</h3>
+        <h2>5.3 MAC地址表的自学习机制</h2>
 
         <p>以太网交换机（第2层交换机）的核心工作，就是根据MAC地址表做出转发决策。MAC地址表的建立和维护，依赖一种被称为"<b>自学习</b>"（Self-learning）的机制，这是交换机的"智能"来源。</p>
 
@@ -138,7 +180,7 @@
   | 00:11:22:DD:EE:FF         | 2      |
   +---------------------------+--------+</code></pre>
 
-        <h3>5.4 MAC地址老化与安全风险</h3>
+        <h2>5.4 MAC地址老化与安全风险</h2>
 
         <p>MAC地址表中的条目不会永远存在。交换机为每个条目维护一个<b>老化时间</b>（Aging Time），默认为300秒（5分钟）。如果在老化时间内没有收到该MAC地址的任何帧，条目就会被删除。这样做的原因是：设备可能关机、移动到了不同的端口、或者被替换了。如果不做老化，MAC地址表会无限膨胀，而且过时的转发信息会导致错误的转发决策。</p>
 
@@ -150,7 +192,7 @@
 
         <p>除了端口安全，还有几种措施可以防范MAC地址攻击：启用动态ARP检测（DAI）、DHCP Snooping、IP源防护（IP Source Guard）。这些功能在第13章（以太网OAM与链路监控）和第14章（MACsec与链路层安全）中会展开。</p>
 
-        <h3>5.5 知名OUI速查表</h3>
+        <h2>5.5 知名OUI速查表</h2>
 
         <p>以下是网络工程师日常工作中最常遇到的几类OUI。当你使用Wireshark抓包看到某个MAC地址的前3字节时，可以根据这张表快速判断设备制造商：</p>
 
@@ -221,7 +263,7 @@
             <p><strong>快速查询方法：</strong>如果你手头有一个MAC地址并且需要查询OUI归属，可以在终端中使用 <code>curl https://api.macvendors.com/00:16:3E</code>，或者在IEEE官方OUI查询页面进行搜索。许多网管工具（如Nagios、Zabbix）也内置了OUI查询功能，用于自动生成设备厂商报告。</p>
         </div>
 
-        <h3>5.6 一个罕见但真实的故障：MAC地址冲突</h3>
+        <h2>5.6 一个罕见但真实的故障：MAC地址冲突</h2>
 
         <p>理论上，全球的MAC地址应该是唯一的。但在实践中，MAC地址冲突虽然非常罕见，却并非不可能发生。我经历过的案例是这样的：</p>
 
@@ -245,7 +287,7 @@
             <a href="06.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
