@@ -281,18 +281,55 @@
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
+<main class="container">
+    <header class="header">
         <h1><span class="emoji"></span><span class="title-text"></span></h1>
         <div class="sub"></div>
-    </div>
+    </header>
+
+    <section class="intro" aria-labelledby="intro-title">
+        <h2 id="intro-title">这门课怎么读</h2>
+        <p>28 章按“原理 → 机制 → 工程 → 前沿”四段递进。先用前九章建立“帧、地址、冲突域、广播域”四个底座概念，再进入性能、可靠性与安全，最后落到数据中心、AI 网络与 800G 物理层。建议按顺序推进，每章都给出可对照的字段表或拓扑。</p>
+        <figure>
+            <svg viewBox="0 0 760 170" role="img" aria-label="以太网课程四段式学习路径示意图">
+                <title>以太网课程四段式学习路径</title>
+                <defs>
+                    <marker id="pathArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                        <path d="M0,0 L10,5 L0,10 z" fill="#6366f1"></path>
+                    </marker>
+                </defs>
+                <rect x="8" y="40" width="168" height="90" rx="14" fill="#eef2ff" stroke="#818cf8" stroke-width="2"></rect>
+                <text x="92" y="72" text-anchor="middle" font-size="16" font-weight="700" fill="#312e81">原理底座</text>
+                <text x="92" y="98" text-anchor="middle" font-size="12" fill="#4338ca">第 1–5 章 · 起源/演化</text>
+                <text x="92" y="116" text-anchor="middle" font-size="12" fill="#4338ca">帧格式 · MAC 地址</text>
+                <rect x="200" y="40" width="168" height="90" rx="14" fill="#e0f2fe" stroke="#0ea5e9" stroke-width="2"></rect>
+                <text x="284" y="72" text-anchor="middle" font-size="16" font-weight="700" fill="#0c4a6e">交换机制</text>
+                <text x="284" y="98" text-anchor="middle" font-size="12" fill="#0369a1">第 6–10 章 · 冲突域</text>
+                <text x="284" y="116" text-anchor="middle" font-size="12" fill="#0369a1">STP · VLAN · 链路聚合</text>
+                <rect x="392" y="40" width="168" height="90" rx="14" fill="#fef9c3" stroke="#facc15" stroke-width="2"></rect>
+                <text x="476" y="72" text-anchor="middle" font-size="16" font-weight="700" fill="#713f12">工程与安全</text>
+                <text x="476" y="98" text-anchor="middle" font-size="12" fill="#854d0e">第 11–22 章 · QoS</text>
+                <text x="476" y="116" text-anchor="middle" font-size="12" fill="#854d0e">园区/数据中心 · Overlay</text>
+                <rect x="584" y="40" width="168" height="90" rx="14" fill="#fee2e2" stroke="#f87171" stroke-width="2"></rect>
+                <text x="668" y="72" text-anchor="middle" font-size="16" font-weight="700" fill="#7f1d1d">前沿与实战</text>
+                <text x="668" y="98" text-anchor="middle" font-size="12" fill="#991b1b">第 23–28 章 · TSN</text>
+                <text x="668" y="116" text-anchor="middle" font-size="12" fill="#991b1b">UEC · 800G · 综合项目</text>
+                <line x1="178" y1="85" x2="198" y2="85" stroke="#6366f1" stroke-width="3" marker-end="url(#pathArrow)"></line>
+                <line x1="370" y1="85" x2="390" y2="85" stroke="#6366f1" stroke-width="3" marker-end="url(#pathArrow)"></line>
+                <line x1="562" y1="85" x2="582" y2="85" stroke="#6366f1" stroke-width="3" marker-end="url(#pathArrow)"></line>
+            </svg>
+            <figcaption>四段式学习路径：从帧与地址的底座概念出发，逐层推进到交换机制、工程安全与前沿物理层。</figcaption>
+        </figure>
+        <h2 id="how-to">如何使用本目录</h2>
+        <p>点击任意章节卡片进入正文；每章页脚提供“上一章 / 返回目录 / 下一章”导航。页面完全离线，直接双击本文件即可阅读，无需服务器或网络。</p>
+    </section>
 
     <div id="cardContainer" class="course-grid"></div>
 
     <div style="text-align:center;">
         <div class="footer"></div>
     </div>
-</div>
+</main>
 
 <!-- Keep this snapshot in sync with courses.json; tests/test_index_catalog.py validates it. -->
 <script id="embeddedCourses" type="application/json">
