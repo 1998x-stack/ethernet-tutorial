@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第6章 CSMA/CD与半双工时代</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +45,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第6章 CSMA/CD与半双工时代</h2>
+        <h1>第6章 CSMA/CD与半双工时代</h1>
 
         <p>大家好，我是你们的讲师。想象一下这个场景：一个房间里坐着几十个人，每个人都可以随时发言，但没有任何主持人来维持秩序。如果两个人同时开口说话，双方都能听到对方的声音（冲突了），于是都停下来，等一段随机的时间后再重新尝试发言——这就是以太网在共享介质时代的"通信礼仪"，正式的名字叫做<b>CSMA/CD</b>。</p>
 
         <p>在今天的全双工交换网络里，你已经几乎体验不到CSMA/CD的存在了——你的网卡和交换机之间的链路是全双工的，发送和接收走不同的线路，永远不会碰撞。但理解CSMA/CD是以太网历史的必修课：它定义了以太网最初的设计哲学，解释了为什么最小帧长是64字节，也告诉你为什么早期以太网的"效率"存在一个理论上限。</p>
 
-        <h3>6.1 为什么共享介质需要访问控制</h3>
+        <h2>6.1 为什么共享介质需要访问控制</h2>
 
         <p>在10BASE5和10BASE2时代，所有设备都连接在同一根同轴电缆上。这意味着这根电缆是"一次只容一人说话"的共享介质。如果两台设备同时向电缆上发送信号，两个信号就会叠加（这在电学上等价于短路），导致两边的接收端都看到乱码——这就是<b>碰撞（Collision）</b>。</p>
 
@@ -58,7 +62,7 @@
 
         <p>CSMA/CD的全称是<b>Carrier Sense Multiple Access with Collision Detection</b>——载波侦听多路访问/碰撞检测。我们把它拆解为5个步骤来理解。</p>
 
-        <h3>6.2 CSMA/CD的五步法</h3>
+        <h2>6.2 CSMA/CD的五步法</h2>
 
         <p><b>第一步：载波侦听（Carrier Sense）。</b>在发送任何数据之前，网络接口卡（NIC）先"听"一下线路上有没有信号。如果线路空闲（没有载波），就进入下一步；如果线路忙（有载波），就一直等待直到线路空闲，然后继续侦听一段帧间间隔（Interframe Gap, 9.6 µs at 10 Mbps），确认线路确实空闲后才开始发送。</p>
 
@@ -106,7 +110,31 @@
         ↓ 是
         └→ 重新侦听</code></pre>
 
-        <h3>6.3 碰撞窗口与最小帧长</h3>
+        <h2>6.3 碰撞窗口与最小帧长</h2>
+
+        <figure>
+            <svg viewBox="0 0 700 300" role="img" aria-label="两站点在同轴共享介质上发送、碰撞与 Jam 信号回传的时空图">
+                <title>碰撞窗口时空图</title>
+                <line x1="60" y1="44" x2="640" y2="44" stroke="#334155" stroke-width="3"></line>
+                <text x="60" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#1e40af">站点 A</text>
+                <text x="640" y="32" text-anchor="middle" font-size="13" font-weight="700" fill="#9a3412">站点 B</text>
+                <text x="350" y="32" text-anchor="middle" font-size="12" fill="#475569">共享介质（同轴电缆）</text>
+                <line x1="60" y1="44" x2="60" y2="255" stroke="#94a3b8" stroke-width="1.5"></line>
+                <path d="M60,255 L56,245 L64,245 z" fill="#94a3b8"></path>
+                <text x="40" y="150" text-anchor="middle" font-size="12" fill="#475569" transform="rotate(-90 40 150)">时间 t ↓</text>
+                <line x1="60" y1="44" x2="350" y2="150" stroke="#2563eb" stroke-width="2.5"></line>
+                <line x1="640" y1="44" x2="350" y2="150" stroke="#ea580c" stroke-width="2.5"></line>
+                <circle cx="350" cy="150" r="6" fill="#dc2626"></circle>
+                <text x="360" y="145" font-size="12" font-weight="700" fill="#b91c1c">碰撞点</text>
+                <line x1="350" y1="150" x2="60" y2="255" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 4"></line>
+                <line x1="350" y1="150" x2="640" y2="255" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 4"></line>
+                <line x1="60" y1="268" x2="640" y2="268" stroke="#475569" stroke-width="1" stroke-dasharray="4 4"></line>
+                <text x="350" y="288" text-anchor="middle" font-size="12" fill="#1e293b">往返传播延迟（RTT）后，A 与 B 都检测到碰撞并发出 Jam 信号</text>
+                <text x="150" y="105" font-size="11" fill="#2563eb">A 的信号</text>
+                <text x="480" y="105" font-size="11" fill="#ea580c">B 的信号</text>
+            </svg>
+            <figcaption>碰撞窗口时空图：信号在共享介质上双向传播，双方信号在中间相遇叠加即碰撞（红点）；最坏情况下发送端要等一个往返传播延迟（512 位时 / 51.2 µs）才能确认没有碰撞，这个上界决定了最小帧长 64 字节。</figcaption>
+        </figure>
 
         <p>CSMA/CD有一个关键的约束条件：发送端必须在发送完整个帧之前就能检测到碰撞。如果发送端已经发完了一个帧才开始检测到碰撞，它就无法通过Jam信号来"压制"传输了——因为帧已经发完了，线缆上已经没有信号可以"覆盖"了。这时候接收端可能已经接收了这个帧的一部分（但CRC校验会失败），且发送端无法知道是否发生了碰撞。</p>
 
@@ -120,7 +148,7 @@
             <p><strong>一个直观的理解：</strong>想象你在一个山谷里大喊一声，回声从对面山壁传回来的时间决定了"最小喊话时长"。如果你喊了一声，在回声回来之前就停止了，万一对面同时有人也在喊（碰撞），你是无法知道的。所以以太网要求你"喊"至少一个很小时隙（512位时），然后通过有没有"噪音回声"来判断是否发生了碰撞。这个设计虽然简单，却非常巧妙。</p>
         </div>
 
-        <h3>6.4 截断二进制指数退避算法</h3>
+        <h2>6.4 截断二进制指数退避算法</h2>
 
         <p>当发生碰撞后，参与碰撞的每个站点需要等待一段随机时间再重试。这个随机时间的计算采用<b>截断二进制指数退避（Truncated Binary Exponential Backoff）</b>算法：</p>
 
@@ -206,7 +234,7 @@
             </tr>
         </table>
 
-        <h3>6.5 一个真实的"碰撞风暴"故事</h3>
+        <h2>6.5 一个真实的"碰撞风暴"故事</h2>
 
         <p>前面讲的都是理论。下面分享一个我亲身经历的真实案例——一个因为CSMA/CD碰撞率过高导致生产系统瘫痪的故事。</p>
 
@@ -232,7 +260,7 @@
             <a href="07.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
