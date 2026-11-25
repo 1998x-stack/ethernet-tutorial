@@ -5,11 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第7章 从共享介质到全双工交换</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        figure { margin: 18px 0; }
+        figcaption { font-size: 0.88rem; color: #475569; line-height: 1.7; margin-top: 8px; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +49,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第7章 从共享介质到全双工交换</h2>
+        <h1>第7章 从共享介质到全双工交换</h1>
 
         <p>大家好，我是你们的讲师。上一章我们体验了CSMA/CD时代的"共享介质之痛"——设备多了碰撞就多、碰撞多了效率就低、效率低了网络就瘫痪。这个场景让人很沮丧：明明每台设备都有10 Mbps的网卡，但实际能用的带宽连5 Mbps都不到。</p>
 
         <p>那么问题来了：有没有一种办法，可以让每台设备同时收发数据，而且彼此之间完全不打架？答案是肯定的——<b>全双工（Full-Duplex）</b>操作模式，配合<b>以太网交换机（Ethernet Switch）</b>。这是以太网历史上最重要的一次进化，它彻底解决了CSMA/CD的所有局限性，让以太网的性能从"共享争抢"走向了"点对点并行"。</p>
 
-        <h3>7.1 全双工如何让CSMA/CD"退役"</h3>
+        <h2>7.1 全双工如何让CSMA/CD"退役"</h2>
 
         <p>全双工意味着连接两端的设备可以<b>同时发送和接收</b>数据，互不干扰。全双工之所以能工作，前提是物理层提供了两条独立的通信通道——一条用于发送（Tx），一条用于接收（Rx）。在双绞线以太网（10BASE-T及以后）中，这一点天然成立：RJ-45连接器中有4对线（8根），实际只用了其中两对——一对用于发送，一对用于接收。</p>
 
@@ -65,9 +73,48 @@
             <li><b>更简单的设计：</b>网卡不再需要实现复杂的CSMA/CD逻辑，MAC层的设计大大简化。</li>
         </ul>
 
+        <figure>
+            <svg viewBox="0 0 700 300" role="img" aria-label="半双工集线器共享冲突域与全双工交换机点对点链路对比图">
+                <title>半双工与全双工对比</title>
+                <text x="175" y="26" text-anchor="middle" font-size="13" font-weight="700" fill="#9a3412">集线器：半双工共享冲突域</text>
+                <text x="525" y="26" text-anchor="middle" font-size="13" font-weight="700" fill="#166534">交换机：全双工点对点链路</text>
+                <line x1="350" y1="10" x2="350" y2="290" stroke="#e2e8f0" stroke-width="2"></line>
+                <g font-size="11" fill="#9a3412" text-anchor="middle">
+                    <rect x="115" y="150" width="120" height="34" rx="6" fill="#ffedd5" stroke="#fb923c"></rect>
+                    <text x="175" y="172" font-weight="700">Hub（共享介质）</text>
+                    <rect x="35" y="50" width="80" height="30" rx="6" fill="#fef3c7" stroke="#f59e0b"></rect><text x="75" y="70">站点 A</text>
+                    <rect x="155" y="50" width="80" height="30" rx="6" fill="#fef3c7" stroke="#f59e0b"></rect><text x="195" y="70">站点 B</text>
+                    <rect x="265" y="50" width="80" height="30" rx="6" fill="#fef3c7" stroke="#f59e0b"></rect><text x="305" y="70">站 C</text>
+                </g>
+                <g stroke="#fb923c" stroke-width="2" fill="none">
+                    <path d="M75,80 V150"></path><path d="M195,80 V150"></path><path d="M305,80 V150"></path>
+                </g>
+                <circle cx="175" cy="120" r="12" fill="#dc2626" opacity="0.85"></circle>
+                <text x="175" y="125" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">!</text>
+                <text x="175" y="108" text-anchor="middle" font-size="10" fill="#b91c1c">碰撞</text>
+                <text x="175" y="210" text-anchor="middle" font-size="11" fill="#9a3412">一次只能一人"发言"，需 CSMA/CD</text>
+                <text x="175" y="228" text-anchor="middle" font-size="11" fill="#9a3412">带宽共享，碰撞拖低吞吐</text>
+                <g font-size="11" fill="#166534" text-anchor="middle">
+                    <rect x="465" y="120" width="120" height="50" rx="6" fill="#dcfce7" stroke="#4ade80"></rect>
+                    <text x="525" y="150" font-weight="700">交换机</text>
+                    <rect x="385" y="40" width="80" height="30" rx="6" fill="#e0f2fe" stroke="#38bdf8"></rect><text x="425" y="60">端口 1</text>
+                    <rect x="585" y="40" width="80" height="30" rx="6" fill="#e0f2fe" stroke="#38bdf8"></rect><text x="625" y="60">端口 2</text>
+                </g>
+                <line x1="445" y1="110" x2="505" y2="122" stroke="#0ea5e9" stroke-width="2"></line>
+                <line x1="605" y1="110" x2="545" y2="122" stroke="#0ea5e9" stroke-width="2"></line>
+                <line x1="500" y1="130" x2="450" y2="118" stroke="#22c55e" stroke-width="2"></line>
+                <line x1="550" y1="130" x2="600" y2="118" stroke="#22c55e" stroke-width="2"></line>
+                <text x="525" y="196" text-anchor="middle" font-size="11" fill="#166534">每端口独享链路，收发各一对线（Tx / Rx）</text>
+                <text x="525" y="214" text-anchor="middle" font-size="11" fill="#166534">收发可同时进行，无碰撞 → CSMA/CD 退役</text>
+                <text x="525" y="232" text-anchor="middle" font-size="11" fill="#166534">10 Mbps 端口理论吞吐可达 20 Mbps（10 发 + 10 收）</text>
+            </svg>
+            <figcaption>半双工（集线器）与全双工（交换机）的根本差异：集线器把所有端口放进同一个冲突域，一次只能一个站点发送；交换机为每个端口提供点对点链路，发送与接收走不同的线对，因而永远不会碰撞，CSMA/CD 也就不再需要。</figcaption>
+        </figure>
+
         <p>从千兆以太网开始，全双工成为了事实上的标准。IEEE在制定802.3z（1000BASE-X）时明确规定：千兆以太网在半双工模式下工作，必须使用"载波扩展"（Carrier Extension）和"帧突发"（Frame Bursting）来解决最小帧长问题——但这只是为了向后兼容老设备而保留的"历史遗产"。实际上，几乎所有的千兆以太网部署都使用全双工模式。</p>
 
-        <h3>7.2 IEEE 802.3x PAUSE帧：链路层流控</h3>
+
+        <h2>7.2 IEEE 802.3x PAUSE帧：链路层流控</h2>
 
         <p>全双工链路虽然解决了碰撞问题，但引入了另一个问题：<b>接收端溢出</b>。在全双工模式下，发送端可以全速向接收端发送数据。但如果接收端的处理速度跟不上发送速度（例如接收端的CPU繁忙，没有及时从网卡缓冲区中取走数据），网卡的接收缓冲区就会填满，后续到达的帧会被丢弃。</p>
 
@@ -81,7 +128,7 @@
             <p><strong>PAUSE帧的争议</strong>：PAUSE帧虽然是一个标准化的流控机制，但在实际部署中争议很大。它的最大问题是"公平性"——当一个端口因某个慢速接收者而触发PAUSE时，所有发往该端口的流量都会被暂停，包括那些目的设备并非慢速接收者的"无辜流量"。因此，很多数据中心网络管理员选择<b>关闭PAUSE帧</b>，转而依赖上层的TCP流控机制。在追求低延迟和高吞吐的应用场景（如RoCEv2）中，PAUSE帧反而可能引发"PFC死锁"这样更严重的问题——我们会在第11章的QoS部分详细讨论。</p>
         </div>
 
-        <h3>7.3 交换机内部架构</h3>
+        <h2>7.3 交换机内部架构</h2>
 
         <p>全双工链路是"路"，交换机是"立交桥"。理解交换机的内部架构，是理解现代以太网性能的关键。交换机内部的数据转发路径大致有以下几种设计方式：</p>
 
@@ -93,7 +140,7 @@
 
         <p><b>Crossbar（交叉矩阵）：</b>高端交换机的核心。Crossbar是一个N×N的交换矩阵，每个输入端可以通过交叉点连接到任意输出端。Crossbar可以同时支持多个输入到多个输出的无阻塞转发。例如，一个64端口的Crossbar可以同时存在32对"同时通信"的连接（每对使用一条独立的交叉路径）。Cisco Catalyst 6500系列交换机的交换矩阵模块（如SFM）就是典型的Crossbar实现。</p>
 
-        <h3>7.4 存储转发 vs 直通转发 vs 无碎片转发</h3>
+        <h2>7.4 存储转发 vs 直通转发 vs 无碎片转发</h2>
 
         <p>交换机接收到一个帧后，什么时候开始转发它？不同的"转发时机"决定了三种转发模式：</p>
 
@@ -128,6 +175,34 @@
             </tr>
         </table>
 
+        <figure>
+            <svg viewBox="0 0 700 240" role="img" aria-label="三种转发模式在同一帧上的开始转发时机对比图">
+                <title>三种转发模式何时开始转发</title>
+                <text x="20" y="26" font-size="13" font-weight="700" fill="#1e293b">同一帧上，三种模式分别从何时开始转发（帧内长度未按比例，教学示意）</text>
+                <rect x="70" y="60" width="16" height="44" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <rect x="86" y="60" width="16" height="44" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <rect x="102" y="60" width="8" height="44" fill="#e2e8f0" stroke="#94a3b8"></rect>
+                <rect x="110" y="60" width="474" height="44" fill="#f1f5f9" stroke="#94a3b8"></rect>
+                <rect x="584" y="60" width="24" height="44" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="78" y="120" text-anchor="middle" font-size="10" fill="#1e40af">目的MAC</text>
+                <text x="94" y="132" text-anchor="middle" font-size="10" fill="#1e40af">源MAC</text>
+                <text x="347" y="86" text-anchor="middle" font-size="11" fill="#475569">载荷（Payload）…</text>
+                <text x="596" y="132" text-anchor="middle" font-size="10" fill="#166534">FCS</text>
+                <g stroke-width="2" fill="none">
+                    <line x1="78" y1="104" x2="78" y2="160" stroke="#ea580c"></line>
+                    <path d="M78,160 l-5,-8 h10 z" fill="#ea580c"></path>
+                    <line x1="102" y1="104" x2="102" y2="188" stroke="#0d9488"></line>
+                    <path d="M102,188 l-5,-8 h10 z" fill="#0d9488"></path>
+                    <line x1="596" y1="104" x2="596" y2="216" stroke="#4338ca"></line>
+                    <path d="M596,216 l-5,-8 h10 z" fill="#4338ca"></path>
+                </g>
+                <text x="88" y="152" font-size="11" fill="#ea580c">直通转发：读到目的 MAC（6 字节）即转发</text>
+                <text x="112" y="180" font-size="11" fill="#0d9488">无碎片转发：收到前 64 字节后转发</text>
+                <text x="140" y="210" font-size="11" fill="#4338ca">存储转发：收完整帧、校验 FCS 无误后才转发</text>
+            </svg>
+            <figcaption>同一条帧上的三个开始转发时刻：直通转发最快（仅读 6 字节目的 MAC，不做错误过滤），无碎片转发等前 64 字节（可滤碰撞碎片），存储转发等整整帧并用 FCS 过滤全部坏帧（延迟与帧长成正比）。延迟数值见上文（教学示意）。</figcaption>
+        </figure>
+
         <p><b>存储转发</b>是最可靠的方式——它先接收完整个帧，校验CRC，确认没有错误后才转发。坏帧被直接丢弃，不会扩散到其他端口。缺点是延迟与帧长成正比：对于1518字节的标准帧，在10 Gbps链路上的串行延迟约为1.2 µs；而在100 Mbps链路上，同样的帧需要约120 µs。存储转发是所有企业级交换机的默认模式。</p>
 
         <p><b>直通转发</b>只读取帧头的6个字节（目的MAC地址）就立即开始转发——延迟只有几纳秒（在10 Gbps链路上约为50 ns），几乎可以忽略不计。但直通转发不会做CRC校验，会把坏帧、超短帧（Runt Frame）等错误帧转发出去，导致"错误扩散"的问题。因此，直通转发主要用于对延迟极其敏感的场景：高频交易（HFT）、高性能计算（HPC）。</p>
@@ -136,7 +211,7 @@
 
         <p>现代交换芯片（如Broadcom Trident 3、Jericho 2等）通常支持多种转发模式，并且可以在不同端口上独立配置。有些高端交换机甚至支持"自适应"转发——正常情况下使用直通转发，但如果检测到某个端口的错误率超过阈值，自动切换回存储转发模式。</p>
 
-        <h3>7.5 线速转发与背板带宽</h3>
+        <h2>7.5 线速转发与背板带宽</h2>
 
         <p><b>线速转发</b>（Wire-Speed Forwarding）是衡量交换机性能的核心指标。它意味着交换机能够以不慢于端口线速率的速度处理帧——数据进得来、出得去，不丢包。要达到线速转发，交换机的<b>背板带宽</b>（Backplane Bandwidth / Switching Capacity）必须大于等于所有端口双向速率的总和。</p>
 
@@ -162,7 +237,7 @@
   → 无法实现线速转发（oversubscription ratio = 1.76/1.6 ≈ 1.1）
   → 在某些情况下会发生内部丢包</code></pre>
 
-        <h3>7.6 一个隐蔽的"微突发"丢包案例</h3>
+        <h2>7.6 一个隐蔽的"微突发"丢包案例</h2>
 
         <p>全双工交换消除了碰撞丢包，但引入了一种新的丢包类型——<b>微突发</b>（Microburst）丢包。这个故事是这样发生的：</p>
 
@@ -186,7 +261,7 @@
             <a href="08.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
