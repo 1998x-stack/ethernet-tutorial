@@ -5,11 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第10章 链路聚合与LACP</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        figure { margin: 18px 0; }
+        figcaption { font-size: 0.88rem; color: #475569; line-height: 1.7; margin-top: 8px; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,10 +49,10 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第10章 链路聚合与LACP</h2>
+        <h1>第10章 链路聚合与LACP</h1>
 
         <p>大家好。上一章我们学习了VLAN和Trunk——Trunk链路允许在同一条物理链路上传输多个VLAN的流量。但这里有一个现实的问题：当你把两台核心交换机用一条千兆链路连接起来时，这条链路的带宽就只有1 Gbps。如果所有跨交换机的流量都挤在这条链路上，它很快会成为瓶颈。</p>
 
@@ -52,7 +60,7 @@
 
         <p>可惜，如果没有特殊处理，在两条交换机之间接多条物理链路，STP会检测到环路并阻塞多余的链路——你只能使用其中一条，其余三条处于闲置状态。这显然不是我们要的效果。那有没有办法让多条物理链路同时工作，既不触发STP环路检测，又能叠加带宽？有的——这就是<strong>链路聚合（Link Aggregation）</strong>，也被称为<strong>端口聚合（Port Aggregation）</strong>或<strong>以太网捆绑（Ethernet Bonding）</strong>。</p>
 
-        <h3>10.1 为什么需要链路聚合</h3>
+        <h2>10.1 为什么需要链路聚合</h2>
 
         <p>链路聚合的目的可以用一句话概括：<strong>把多条物理链路捆绑成一条逻辑链路，同时增加带宽和提供冗余</strong>。它解决的是三个核心问题：</p>
 
@@ -64,7 +72,30 @@
 
         <p>链路聚合技术最早由各个厂商独立实现（Cisco的EtherChannel、华为的Eth-Trunk等），后来在2000年被IEEE标准化为<strong>802.3ad</strong>，之后又被重新归类为<strong>802.1AX</strong>。标准化的链路聚合控制协议叫做<strong>LACP（Link Aggregation Control Protocol）</strong>。</p>
 
-        <h3>10.2 静态LAG：手工聚合</h3>
+        <figure>
+            <svg viewBox="0 0 700 280" role="img" aria-label="两台交换机间 4 条物理链路聚合成一条逻辑链路、带宽叠加为 4 Gbps 的示意图">
+                <title>链路聚合：多条物理链路 → 一条逻辑链路</title>
+                <text x="350" y="26" text-anchor="middle" font-size="13" font-weight="700" fill="#1e293b">4 × 1 Gbps 物理链路 → 1 × 4 Gbps 逻辑链路（LAG / Port-channel）</text>
+                <rect x="70" y="70" width="130" height="60" rx="10" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="135" y="106" text-anchor="middle" font-size="13" font-weight="700" fill="#1e40af">接入交换机</text>
+                <rect x="500" y="70" width="130" height="60" rx="10" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="565" y="106" text-anchor="middle" font-size="13" font-weight="700" fill="#166534">核心交换机</text>
+                <g stroke="#6366f1" stroke-width="3">
+                    <line x1="200" y1="140" x2="500" y2="160"></line>
+                    <line x1="200" y1="160" x2="500" y2="180"></line>
+                    <line x1="200" y1="180" x2="500" y2="200"></line>
+                    <line x1="200" y1="200" x2="500" y2="220"></line>
+                </g>
+                <g font-size="11" fill="#4338ca" text-anchor="middle">
+                    <text x="350" y="140" fill="#b45309">4 条物理成员链路（Member Links），任一断开自动切走流量</text>
+                </g>
+                <rect x="250" y="238" width="200" height="30" rx="15" fill="#eef2ff" stroke="#6366f1"></rect>
+                <text x="350" y="258" text-anchor="middle" font-size="12" font-weight="700" fill="#4338ca">逻辑链路：4 Gbps，对 STP 视为一条链路</text>
+            </svg>
+            <figcaption>链路聚合把 N 条物理成员链路捆绑成一条逻辑链路：带宽近似叠加（4×1 Gbps），任一成员故障时流量在剩余链路重分发（毫秒级，快于 STP 收敛），且聚合组在 STP 眼中只是“一条链路”，因此成员链路不会被阻塞。带宽叠加为 4 Gbps 为理想负载分担下的教学示意，实际吞吐取决于哈希分布。</figcaption>
+        </figure>
+
+        <h2>10.2 静态LAG：手工聚合</h2>
 
         <p>最简单的链路聚合方式是<strong>静态LAG（Static Link Aggregation Group）</strong>——管理员手工将若干端口加入一个聚合组中。静态LAG不依赖任何协议来协商聚合参数，两端需要分别手工配置。</p>
 
@@ -91,7 +122,7 @@ interface GigabitEthernet 0/4
 
         <p>但静态聚合有一个明显的缺点：如果某一端的配置有误（比如一端用了4条链路，另一端只配了3条），交换机不会给你任何错误提示——聚合组内的流量可能因为配置不一致而导致丢包。另外，静态聚合也无法检测链路对端的故障——如果对端设备的端口出现问题（比如硬件故障但物理层仍然UP），静态聚合不会自动将流量切走。这就是LACP出场的原因。</p>
 
-        <h3>10.3 LACP：让链路自己协商</h3>
+        <h2>10.3 LACP：让链路自己协商</h2>
 
         <p><strong>LACP（Link Aggregation Control Protocol）</strong>是一个动态链路聚合协议。它允许两台设备自动协商哪些端口可以聚合、聚合参数是什么、以及如何处理链路故障。</p>
 
@@ -183,7 +214,7 @@ interface GigabitEthernet 0/4
             </tr>
         </table>
 
-        <h3>10.4 负载分担的哈希算法</h3>
+        <h2>10.4 负载分担的哈希算法</h2>
 
         <p>链路聚合的带宽叠加效果取决于流量如何在成员链路之间<strong>负载分担</strong>。负载分担的算法通常是基于<strong>哈希（Hash）</strong>的——交换机从帧的头部提取某些字段，计算出一个哈希值，然后根据哈希值选择一条成员链路。</p>
 
@@ -195,6 +226,39 @@ interface GigabitEthernet 0/4
             <li><strong>混合模式</strong>：源MAC + 目的MAC + 源IP + 目的IP + 源端口 + 目的端口的组合哈希</li>
         </ul>
 
+        <figure>
+            <svg viewBox="0 0 700 260" role="img" aria-label="哈希函数把不同的流映射到四条成员链路上，同一条流始终走同一条链路的示意图">
+                <title>哈希负载分担：同一条流走同一条链路</title>
+                <text x="20" y="26" font-size="13" font-weight="700" fill="#1e293b">哈希函数把每条“流”映射到一条成员链路（保证同流同链路 → 帧保序）</text>
+                <g font-size="11" text-anchor="middle">
+                    <rect x="30" y="50" width="130" height="34" rx="8" fill="#fef3c7" stroke="#f59e0b"></rect><text x="95" y="72" fill="#92400e">流 1（五元组 A）</text>
+                    <rect x="30" y="110" width="130" height="34" rx="8" fill="#fef3c7" stroke="#f59e0b"></rect><text x="95" y="132" fill="#92400e">流 2（五元组 B）</text>
+                    <rect x="30" y="170" width="130" height="34" rx="8" fill="#fef3c7" stroke="#f59e0b"></rect><text x="95" y="192" fill="#92400e">流 3（五元组 C）</text>
+                </g>
+                <rect x="280" y="95" width="120" height="70" rx="10" fill="#eef2ff" stroke="#6366f1"></rect>
+                <text x="340" y="125" text-anchor="middle" font-size="12" font-weight="700" fill="#4338ca">哈希函数</text>
+                <text x="340" y="145" text-anchor="middle" font-size="10" fill="#4338ca">dstIP/dstMAC…</text>
+                <g stroke="#94a3b8" stroke-width="2" fill="none">
+                    <line x1="160" y1="67" x2="280" y2="115"></line>
+                    <line x1="160" y1="127" x2="280" y2="130"></line>
+                    <line x1="160" y1="187" x2="280" y2="150"></line>
+                </g>
+                <g font-size="11" fill="#166534" text-anchor="middle">
+                    <rect x="520" y="40" width="150" height="28" rx="6" fill="#dcfce7" stroke="#4ade80"></rect><text x="595" y="59">成员链路 1</text>
+                    <rect x="520" y="88" width="150" height="28" rx="6" fill="#dcfce7" stroke="#4ade80"></rect><text x="595" y="107">成员链路 2</text>
+                    <rect x="520" y="136" width="150" height="28" rx="6" fill="#dcfce7" stroke="#4ade80"></rect><text x="595" y="155">成员链路 3</text>
+                    <rect x="520" y="184" width="150" height="28" rx="6" fill="#dcfce7" stroke="#4ade80"></rect><text x="595" y="203">成员链路 4</text>
+                </g>
+                <g stroke="#22c55e" stroke-width="2" fill="none">
+                    <line x1="400" y1="110" x2="520" y2="54"></line>
+                    <line x1="400" y1="125" x2="520" y2="102"></line>
+                    <line x1="400" y1="140" x2="520" y2="150"></line>
+                </g>
+                <text x="350" y="240" text-anchor="middle" font-size="11" fill="#b45309">大象流数量少、哈希输入变化少 → 可能挤在少数链路；老鼠流多则分布更均匀（教学示意）</text>
+            </svg>
+            <figcaption>哈希负载分担不是“逐帧轮询”：交换机按源/目的 MAC、IP、L4 端口的哈希把每条流固定到一条成员链路上，从而保证同一条流的帧按序到达（避免乱序伤害 TCP 性能）。代价是当流的数量少、哈希输入变化有限时（大象流）分布会倾斜。</figcaption>
+        </figure>
+
         <p>哈希算法的选择对负载分担的效果影响很大。如果你的网络流量主要是少量的"大象流"（比如大文件传输、视频流），每条流的数据量巨大但流的数量很少，基于MAC或IP的哈希可能无法将这些流均匀地分配到多条链路上——因为哈希输入的变化太少。如果流量由大量"老鼠流"（比如Web请求、DNS查询）组成，哈希的统计均匀性通常会更好。</p>
 
         <p>这里有一个重要的限制：<strong>同一条流的帧必须走同一条物理链路</strong>。什么叫同一条流？这里指的是具有相同哈希输入特征的帧序列。比如，基于源MAC+目的MAC哈希：主机A→主机B的所有帧都会被哈希到同一条链路上。这样做的好处是帧的<strong>保序（In-order Delivery）</strong>——如果同一个TCP连接的不同帧通过不同的物理链路到达对端，由于各链路的延迟可能不同，帧可能乱序到达，这对TCP的性能影响很大。</p>
@@ -203,7 +267,7 @@ interface GigabitEthernet 0/4
             <p><strong>真实案例</strong>：某视频监控平台的NVR（网络视频录像机）通过链路聚合连接到核心交换机。运维人员发现，明明4条千兆链路聚合了，但总带宽始终只有1.5 Gbps左右，远低于预期的4 Gbps。排查后发现，原因是哈希算法配置为基于"源MAC+目的MAC"，而NVR只有两个MAC地址（一个用于管理，一个用于数据传输），绝大多数视频流都是从NVR到存储服务器的。哈希值几乎不变，所有流量都挤在一条链路上。解决方案是将哈希算法改为"源IP+目的IP+源端口+目的端口"的四元组哈希——由于每个摄像机流的源端口不同，哈希分布变得均匀，总带宽提升到了3.6 Gbps。</p>
         </div>
 
-        <h3>10.5 MC-LAG：跨设备的链路聚合</h3>
+        <h2>10.5 MC-LAG：跨设备的链路聚合</h2>
 
         <p>链路聚合有一个先天的限制：<strong>聚合组中的所有物理端口必须在同一台交换机上</strong>。这是因为LACP的System ID是唯一的，无法将两台不同交换机上的端口加入同一个聚合组。这对于采用"双核心"架构的园区网络来说是个麻烦——服务器无法同时连接到两台核心交换机的端口并使用链路聚合的冗余优势。</p>
 
@@ -224,7 +288,7 @@ interface GigabitEthernet 0/4
             <p><strong>实用技巧</strong>：在配置LACP时，可以调整<strong>LACP速率</strong>（LACP Rate）来控制故障检测速度。默认的Long Timeout是30秒（每30秒发送一次LACPDU，连续3次丢失则认为链路故障，即90秒检测时间）。如果启用Fast Rate（Short Timeout），LACPDU每1秒发送一次，连续3次丢失则在约3秒内检测到故障。对于对故障切换时间敏感的场景（比如金融交易系统），建议启用Fast Rate。</p>
         </div>
 
-        <h3>10.6 总结与预告</h3>
+        <h2>10.6 总结与预告</h2>
 
         <p>这一章我们详细学习了链路聚合技术——从静态LAG到动态LACP，从哈希负载分担算法到跨设备的MC-LAG。链路聚合是构建高可用、高带宽以太网络的基础技术。它让你能够在两台交换机之间利用多条物理链路，同时享受带宽叠加和链路冗余的好处，而且完全兼容STP。</p>
 
@@ -236,7 +300,7 @@ interface GigabitEthernet 0/4
             <a href="11.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
