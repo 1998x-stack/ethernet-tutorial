@@ -5,11 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第8章 透明桥接与生成树协议</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        figure { margin: 18px 0; }
+        figcaption { font-size: 0.88rem; color: #475569; line-height: 1.7; margin-top: 8px; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +49,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第8章 透明桥接与生成树协议</h2>
+        <h1>第8章 透明桥接与生成树协议</h1>
 
         <p>大家好。上一章我们讲到了交换机的出现如何彻底改变了以太网的命运——从冲突域共享到每个端口独立冲突域，从半双工到全双工，以太网从一个"抢话筒"的广播网络变成了一个高效的交换网络。但是，这里有一个问题：当你把两台甚至几十台交换机连接起来形成一个更大的网络时，会发生什么？</p>
 
         <p>如果你以为交换机连接交换机就像集线器连集线器一样简单，那可就大错特错了。交换机之间的连接会引入一个非常棘手的问题——<strong>环路（Loop）</strong>。环路会导致一个帧在网络中无限循环，最终耗尽所有带宽，让整个网络瘫痪。这一章，我们就来深入探讨交换机是如何"自学"转发表的，以及<strong>生成树协议（Spanning Tree Protocol, STP）</strong>是如何优雅地解决环路问题的。</p>
 
-        <h3>8.1 为什么需要桥接</h3>
+        <h2>8.1 为什么需要桥接</h2>
 
         <p>在早期的以太网中，所有设备都挂在同一条同轴电缆上——这种单网段设计有一个天然的瓶颈：冲突域随着设备数量增加而扩大。当网络中有几十台设备时，CSMA/CD的效率会急剧下降，因为碰撞太频繁了。你想想，一共就一条"马路"，几十辆车在上面同时跑，不撞车才怪。</p>
 
@@ -58,7 +66,7 @@
 
         <p>网桥的核心工作是<strong>透明桥接（Transparent Bridging）</strong>——之所以叫"透明"，是因为终端设备完全感知不到网桥的存在。对于连接在网桥两端的主机来说，它们以为自己是直接相连的。网桥在幕后默默完成帧的转发和过滤，不需要你在主机上做任何配置。这听起来很美好，但要想做到"透明"，网桥必须解决一个根本问题：它怎么知道哪个MAC地址在哪个端口后面？</p>
 
-        <h3>8.2 透明网桥的五步决策</h3>
+        <h2>8.2 透明网桥的五步决策</h2>
 
         <p>透明网桥的转发逻辑可以归纳为五个步骤，按优先级排列依次是：<strong>学习（Learning）、泛洪（Flooding）、过滤（Filtering）、转发（Forwarding）、老化（Aging）</strong>。我们一个一个来看。</p>
 
@@ -90,7 +98,7 @@
     else:
         forward(frame, out_port)            // 确定路径：转发</code></pre>
 
-        <h3>8.3 广播风暴的形成：一个环路毁掉一个生产网络的故事</h3>
+        <h2>8.3 广播风暴的形成：一个环路毁掉一个生产网络的故事</h2>
 
         <div class="warning">
             <p><strong>真实案例</strong>：201X年，某互联网公司的一个数据中心在凌晨进行网络扩容时，工程师在机柜顶部误插了一根跳线——一条简单的以太网线，连接了两台本不应该互连的交换机。几秒钟之内，整个机柜的网络完全瘫痪，进而影响到该机柜承载的所有在线服务。监控系统显示，交换机的所有端口流量瞬间飙升到了线速的100%，CPU使用率冲到100%，连管理接口都无法响应。最终，运维团队不得不断电重启整个机柜——一根网线引发的"惨案"。</p>
@@ -98,17 +106,65 @@
 
         <p>这就是<strong>广播风暴（Broadcast Storm）</strong>的典型场景。它是怎么发生的？假设有三台交换机连接成了一个三角形——Switch A的端口1连Switch B，Switch B的端口2连Switch C，Switch C的端口3连Switch A。当任意一台主机发送一个ARP广播帧时——假设主机H1发了一个"Who has 192.168.1.2?"的广播——这个帧会被Switch A从所有其他端口泛洪出去。Switch B和Switch C都会收到这个广播帧。然后，Switch B把它从自己的其他端口（包括连Switch C的端口）泛洪出去，Switch C也同样操作。于是，这个帧就在三角形环路中一圈一圈地循环，每经过一台交换机就被复制一次，最终导致网络中的广播帧数量呈指数级增长。这个过程被称为<strong>广播风暴</strong>。</p>
 
+        <figure>
+            <svg viewBox="0 0 700 300" role="img" aria-label="三台交换机两两互连形成环路，一个广播帧在环中不断循环复制示意图">
+                <title>广播风暴环路</title>
+                <g font-size="12" fill="#1e40af" text-anchor="middle">
+                    <rect x="300" y="40" width="100" height="40" rx="8" fill="#dbeafe" stroke="#60a5fa"></rect><text x="350" y="65" font-weight="700">交换机 A</text>
+                    <rect x="120" y="210" width="100" height="40" rx="8" fill="#dbeafe" stroke="#60a5fa"></rect><text x="170" y="235" font-weight="700">交换机 B</text>
+                    <rect x="480" y="210" width="100" height="40" rx="8" fill="#dbeafe" stroke="#60a5fa"></rect><text x="530" y="235" font-weight="700">交换机 C</text>
+                    <rect x="300" y="250" width="100" height="34" rx="8" fill="#fef3c7" stroke="#f59e0b"></rect><text x="350" y="272" fill="#92400e">主机 H1</text>
+                </g>
+                <line x1="330" y1="80" x2="200" y2="210" stroke="#94a3b8" stroke-width="3"></line>
+                <line x1="370" y1="80" x2="500" y2="210" stroke="#94a3b8" stroke-width="3"></line>
+                <line x1="220" y1="230" x2="480" y2="230" stroke="#94a3b8" stroke-width="3"></line>
+                <line x1="350" y1="250" x2="350" y2="240" stroke="#f59e0b" stroke-width="3"></line>
+                <g fill="#dc2626">
+                    <path d="M300,90 l14,26 l-18,4 z"></path>
+                    <path d="M400,90 l-14,26 l18,4 z"></path>
+                    <path d="M250,240 l40,6 l0,-14 z"></path>
+                    <path d="M450,240 l-40,6 l0,-14 z"></path>
+                </g>
+                <text x="350" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#b91c1c">广播帧在三角形环路中不断循环</text>
+                <text x="350" y="170" text-anchor="middle" font-size="11" fill="#b91c1c">每经过一台交换机就被泛洪复制一次 → 指数增长</text>
+                <text x="350" y="188" text-anchor="middle" font-size="11" fill="#b91c1c">MAC 地址在两端口间翻转（MAC Flapping）</text>
+                <text x="350" y="222" text-anchor="middle" font-size="11" fill="#475569">三条链路中必须逻辑阻塞一条，才能打破环路</text>
+            </svg>
+            <figcaption>环路引发广播风暴：三台交换机两两互连时，一个广播帧会被反复泛洪并在环中无限循环，流量指数增长、地址表被错误刷新（MAC Flapping），最终拖垮整网。解决办法是 STP 在逻辑上阻塞一条链路。</figcaption>
+        </figure>
+
         <p>更为可怕的是，广播风暴的"燃料"不仅仅是广播帧本身。碰到广播帧的交换机会不停地更新自己的MAC地址表，消耗CPU资源；与此同时，广播帧的泛洪占满了所有端口的带宽，正常的数据帧根本无法传输——这就是"丢包"和"延迟飙升"的根本原因。最终，整个网络陷入"活死"状态——物理连接是好的，但没有任何有效数据能传过去。</p>
 
         <p>广播风暴的另一个"放大器"是<strong>目的MAC地址在环路中不断变化</strong>的问题。当一个帧在环路中循环时，每经过一台交换机，它的源MAC地址可能被"学到"在错误的端口（因为交换机总是在更新地址表），导致后续的转发决策完全混乱。这被称为<strong>MAC地址翻转（MAC Flapping）</strong>——同一个MAC地址一会儿出现在端口1，一会儿出现在端口2。你会看到交换机的日志中疯狂输出 "mac-flapping detected"，然后CPU飙升，然后网络崩溃。</p>
 
         <p>所以，如果说交换机是把以太网从"蛮荒时代"带入"文明时代"的关键设备，那么环路就是以太网交换世界最大的"原罪"。为了解决环路问题，人们发明了<strong>生成树协议（Spanning Tree Protocol, STP）</strong>。</p>
 
-        <h3>8.4 802.1D STP：为网络"修剪"出一棵树</h3>
+        <h2>8.4 802.1D STP：为网络"修剪"出一棵树</h2>
 
         <p>STP的核心思想其实非常优雅：在一个存在环路的物理拓扑中，通过逻辑上阻塞某些端口，消除环路，形成一个<strong>树形（Tree）</strong>的无环逻辑拓扑。树形拓扑有且只有一条路径从任何一个节点到达另一个节点——没有环路，就没有广播风暴。</p>
 
         <p>STP由伟大的计算机科学家<strong>Radia Perlman</strong>（拉迪亚·帕尔曼）在1985年发明。据说她当时写这个算法的时候只有27岁，而她的算法至今仍在全球数以亿计的交换机上运行。这位"生成树之母"后来还发明了IS-IS路由协议——一位真正的网络领域巨人。帕尔曼曾经开玩笑说："我当时只是想让桥接网络'不要成环'，谁知道这个算法会火三十年。"</p>
+
+        <figure>
+            <svg viewBox="0 0 700 300" role="img" aria-label="STP 在三角形环路中阻塞一个冗余端口，形成无环树形拓扑示意图">
+                <title>STP 阻塞冗余端口形成树</title>
+                <g font-size="12" fill="#1e40af" text-anchor="middle">
+                    <rect x="300" y="40" width="100" height="40" rx="8" fill="#dcfce7" stroke="#4ade80"></rect><text x="350" y="65" font-weight="700" fill="#166534">根桥 A</text>
+                    <rect x="120" y="210" width="100" height="40" rx="8" fill="#dbeafe" stroke="#60a5fa"></rect><text x="170" y="235" font-weight="700">交换机 B</text>
+                    <rect x="480" y="210" width="100" height="40" rx="8" fill="#dbeafe" stroke="#60a5fa"></rect><text x="530" y="235" font-weight="700">交换机 C</text>
+                </g>
+                <line x1="330" y1="80" x2="200" y2="210" stroke="#22c55e" stroke-width="4"></line>
+                <line x1="370" y1="80" x2="500" y2="210" stroke="#cbd5e1" stroke-width="4" stroke-dasharray="7 5"></line>
+                <line x1="220" y1="230" x2="480" y2="230" stroke="#22c55e" stroke-width="4"></line>
+                <circle cx="435" cy="145" r="13" fill="#ef4444"></circle>
+                <text x="435" y="150" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">X</text>
+                <text x="350" y="150" text-anchor="middle" font-size="12" font-weight="700" fill="#b91c1c">阻塞（Blocking）</text>
+                <text x="250" y="150" text-anchor="middle" font-size="11" fill="#166534">根端口/指定端口：转发</text>
+                <text x="270" y="272" text-anchor="middle" font-size="11" fill="#475569">绿色链路转发流量</text>
+                <text x="500" y="276" text-anchor="middle" font-size="11" fill="#b91c1c">虚线链路被逻辑阻塞，物理仍然连接</text>
+            </svg>
+            <figcaption>STP 的核心机制：在存在环路的物理拓扑中，选出 Bridge ID 最小的交换机作根桥，再逐段比较路径开销确定端口角色，最终把冗余的一条链路置为阻塞（Blocking）状态，得到一棵无环的逻辑生成树；被阻塞的链路物理上依然连着，一旦主链路故障可立即接管。</figcaption>
+        </figure>
 
         <p>STP的工作原理分为以下几步：</p>
 
@@ -125,7 +181,7 @@
 
         <p><strong>第四步：端口状态迁移。</strong>STP端口会经历以下状态：<strong>Blocking</strong>（不转发，不收BPDU以外的帧）→ <strong>Listening</strong>（不转发，但开始参与STP计算）→ <strong>Learning</strong>（不转发，但开始学习MAC地址）→ <strong>Forwarding</strong>（正常转发）。从Blocking到Forwarding默认需要30~50秒——这就是STP收敛慢的主要原因。</p>
 
-        <h3>8.5 BPDU：STP的"呼吸与心跳"</h3>
+        <h2>8.5 BPDU：STP的"呼吸与心跳"</h2>
 
         <p>STP依赖<strong>网桥协议数据单元（Bridge Protocol Data Unit, BPDU）</strong>来交换拓扑信息。根桥每隔<strong>2秒（Hello Time）</strong>发送一次<strong>配置BPDU（Configuration BPDU）</strong>，告诉其他交换机"我是根桥"。非根桥收到后，会根据自己的情况更新信息并继续转发BPDU。</p>
 
@@ -156,7 +212,7 @@
             <p><strong>实用技巧</strong>：在服务器端口上，你可以启用<strong>PortFast</strong>（也叫Edge Port）功能，让接入端口立即进入Forwarding状态，跳过STP的Listening和Learning阶段。这样服务器接入交换机时就可以"即插即用"，不需要等30秒。但切记：只在连接终端设备的端口上启用PortFast，不要在交换机互连的端口上启用——否则会引入环路风险。</p>
         </div>
 
-        <h3>8.6 RSTP：让收敛从50秒降到毫秒级</h3>
+        <h2>8.6 RSTP：让收敛从50秒降到毫秒级</h2>
 
         <p>STP最大的问题就是慢——50秒的收敛时间在今天的网络环境中是不可接受的。哪怕是一台普通服务器重启，如果STP要等50秒才能收敛，业务中断时间就太长了。为此，IEEE 802.1w工作组在2001年推出了<strong>快速生成树协议（Rapid Spanning Tree Protocol, RSTP）</strong>。</p>
 
@@ -170,7 +226,7 @@
 
         <p>RSTP的收敛速度有多快？在典型的直连拓扑中，RSTP可以在<strong>几毫秒到几百毫秒</strong>内完成收敛，几乎是瞬时的。这得益于它不再依赖计时器，而是依赖握手协议。可以这么说：STP是"计时器驱动"，而RSTP是"事件驱动"。</p>
 
-        <h3>8.7 MSTP：多实例的"生成树军团"</h3>
+        <h2>8.7 MSTP：多实例的"生成树军团"</h2>
 
         <p>RSTP解决了收敛速度的问题，但它仍然有一个根本性的限制：整个交换网络只有一棵生成树。这意味着，即使你有100条物理链路，STP/RSTP会阻塞其中大约一半来消除环路——这些被阻塞的链路的带宽就被浪费了。</p>
 
@@ -243,7 +299,7 @@
             <p><strong>一个常见的误解</strong>：有人以为"STP已经过时了，现代网络不需要生成树"。这个想法非常危险。即使你使用了链路聚合（LACP）将多条物理链路捆绑成一条逻辑链路，LACP只解决了链路级别的冗余，它无法应对交换机之间因为误接线而形成的环路。只要你的网络中存在两条以上的交换机，生成树协议就是你防止广播风暴的最后一道防线。实际上，很多网络故障的根因就是"STP配置不当"或"STP被误禁用"。</p>
         </div>
 
-        <h3>8.8 总结与预告</h3>
+        <h2>8.8 总结与预告</h2>
 
         <p>这一章我们深入学习了透明桥接的五个核心步骤，了解了广播风暴的形成机制和它如何摧毁一个生产网络，然后详细拆解了STP从根桥选举到端口状态迁移的完整过程，最后看到了RSTP和MSTP如何通过协议改进和实例化设计解决STP的收敛慢和带宽浪费问题。生成树协议是以太网交换世界的"安全带"——平时你可能感觉不到它的存在，但它总在关键时刻保护网络不被环路摧毁。</p>
 
@@ -255,7 +311,7 @@
             <a href="09.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
