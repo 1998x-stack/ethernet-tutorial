@@ -5,11 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第1章 以太网的起源与精神</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        figure { margin: 18px 0; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+        figcaption { font-size: 0.88rem; color: #475569; line-height: 1.7; margin-top: 8px; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html" class="active">第1章 以太网的起源与精神</a></li>
@@ -41,10 +49,10 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第1章 以太网的起源与精神</h2>
+        <h1>第1章 以太网的起源与精神</h1>
 
         <p>大家好，我是你们的讲师。今天我们要聊的是一个你可能每天都在用、却很少去思考它来历的技术——<strong>Ethernet</strong>（以太网）。</p>
 
@@ -52,7 +60,7 @@
 
         <p>嗯，如果你这么想，那今天这一章可能会让你大吃一惊。以太网的故事，远比"插网线上网"这四个字要精彩得多。它是一部关于技术选择、商业联盟、开放标准如何击败封闭体系的史诗。而这一切，要从1973年说起——那一年，互联网还叫<strong>ARPANET</strong>。</p>
 
-        <h3>1.1 为什么需要以太网</h3>
+        <h2>1.1 为什么需要以太网</h2>
 
         <p>把时间拨回1973年。那一年，第一台手机还没诞生（摩托罗拉要等到10年后才推出DynaTAC），个人计算机还只是极客圈子里的玩具。如果你想在同一个办公室里把两台计算机连起来交换数据，你的选择极其有限：要么用磁带把数据倒腾过去（俗称"SneakerNet"——穿着球鞋跑一趟），要么通过电话线用调制解调器以300 bps的龟速拨号连接。300 bps是什么概念？传输一份今天的普通网页（约2 MB），你需要连续不断传输将近15个小时。</p>
 
@@ -64,7 +72,7 @@
 
         <p>但如果反过来想呢？如果让每一台计算机都拥有自己的处理能力，然后通过网络把它们连接起来互相通信——这不就是后来的"PC + 局域网"模式吗？这个在今天看来理所当然的想法，在1973年可是革命性的。当时的人们面临的核心问题是：能不能有一种技术，能在短距离内（比如一栋办公楼或一个园区），以低成本、高可靠性的方式，把几十台甚至上百台计算机连接起来？这就引出了<strong>局域网（Local Area Network, LAN）</strong>的概念。但在1973年，局域网的世界还是一片"蛮荒之地"。</p>
 
-        <h3>1.2 ARPANET之前的局域网世界</h3>
+        <h2>1.2 ARPANET之前的局域网世界</h2>
 
         <p>在以太网诞生前后，市场上涌现过各种各样的局域网技术。用今天的眼光回溯，那真是一个"百家争鸣"的年代。我们来认识几位当时的"参赛选手"：</p>
 
@@ -125,7 +133,7 @@
 
         <p>说到这里，我想起一个有意思的插曲。1990年代初期，IBM的Token Ring在技术上明显优于当时还停留在"冲突检测"阶段的以太网。IBM的销售团队经常拿"以太网会崩溃"作为卖点去游说企业客户。但到了1990年代后期，情况发生了戏剧性的逆转——以太网交换机的价格急剧下降，而100 Mbps的Fast Ethernet横空出世，直接把Token Ring的16 Mbps上限按在地上摩擦。从那时起，Token Ring的市场份额就像坐滑梯一样直线下降，2000年后彻底退出了历史舞台。</p>
 
-        <h3>1.3 Xerox PARC的"摇篮"</h3>
+        <h2>1.3 Xerox PARC的"摇篮"</h2>
 
         <p>要讲以太网诞生的故事，必须先讲一个地方——<strong>Xerox PARC</strong>（施乐帕克研究中心）。</p>
 
@@ -155,29 +163,54 @@ May 22, 1973</code></pre>
 
         <p>还有一个小细节：Metcalfe在PARC的同事David Boggs也是以太网的重要贡献者。实际上，Boggs实现了以太网的第一个硬件接口——一块连接Alto计算机和同轴电缆的电路板。两人在1976年共同发表了论文《Ethernet: Distributed Packet Switching for Local Computer Networks》，这篇论文后来成了计算机通信领域被引用最多的文献之一。</p>
 
-        <h3>1.4 第一张以太网草图</h3>
+        <h2>1.4 第一张以太网草图</h2>
 
         <p>Metcalfe最初设计的以太网是什么样的？让我们来看看技术细节。</p>
 
         <p>第一张以太网的网络拓扑是<strong>总线型（Bus Topology）</strong>——所有的计算机都连接到一根共享的同轴电缆上。这根电缆就是"以太"的物理化身。数据传输速率为<strong>2.94 Mbps</strong>——这个奇怪的数字来源于Xerox Alto计算机的系统时钟频率。Alto的CPU时钟约为5.88 MHz，Metcalfe取了一半作为网络接口的时钟，于是就得到了2.94 Mbps这个"奇葩"速率。</p>
 
-        <p>它的结构可以用下面的ASCII示意图来表示：</p>
+        <p>它的结构可以用下面这张拓扑图来表示：</p>
 
-        <pre><code>+----------+  +----------+  +----------+  +----------+
-| Station  |  | Station  |  | Station  |  | File     |
-| A (Alto) |  | B (Alto) |  | C (Alto) |  | Server   |
-+----+-----+  +----+-----+  +----+-----+  +----+-----+
-     |             |             |             |
-=====+=============+=============+=============+=====  Coaxial Cable
-     |             |             |             |          (共享介质)
-     |             |             |             |
-  Terminator(50Ω)                         Terminator(50Ω)</code></pre>
+        <figure>
+            <svg viewBox="0 0 700 270" role="img" aria-label="原始以太网总线拓扑：四台 Alto 计算机与文件服务器通过吸血鬼接头分接在同一根同轴电缆上，两端接 50Ω 终端电阻">
+                <title>原始以太网总线拓扑</title>
+                <text x="350" y="24" text-anchor="middle" font-size="13" font-weight="700" fill="#1e293b">1973 年以太网：共享总线拓扑</text>
+                <g font-size="12" fill="#1e40af" text-anchor="middle">
+                    <rect x="65" y="46" width="110" height="44" rx="8" fill="#dbeafe" stroke="#60a5fa"></rect>
+                    <text x="120" y="66" font-weight="700">A (Alto)</text><text x="120" y="82" font-size="10" fill="#2563eb">站点</text>
+                    <rect x="225" y="46" width="110" height="44" rx="8" fill="#dbeafe" stroke="#60a5fa"></rect>
+                    <text x="280" y="66" font-weight="700">B (Alto)</text><text x="280" y="82" font-size="10" fill="#2563eb">站点</text>
+                    <rect x="385" y="46" width="110" height="44" rx="8" fill="#dbeafe" stroke="#60a5fa"></rect>
+                    <text x="440" y="66" font-weight="700">C (Alto)</text><text x="440" y="82" font-size="10" fill="#2563eb">站点</text>
+                    <rect x="545" y="46" width="110" height="44" rx="8" fill="#dcfce7" stroke="#4ade80"></rect>
+                    <text x="600" y="66" font-weight="700" fill="#166534">文件服务器</text><text x="600" y="82" font-size="10" fill="#15803d">站点</text>
+                </g>
+                <g stroke="#94a3b8" stroke-width="2">
+                    <line x1="120" y1="90" x2="120" y2="176"></line>
+                    <line x1="280" y1="90" x2="280" y2="176"></line>
+                    <line x1="440" y1="90" x2="440" y2="176"></line>
+                    <line x1="600" y1="90" x2="600" y2="176"></line>
+                </g>
+                <g fill="#94a3b8">
+                    <path d="M120,176 l-6,-9 h12 z"></path><path d="M280,176 l-6,-9 h12 z"></path>
+                    <path d="M440,176 l-6,-9 h12 z"></path><path d="M600,176 l-6,-9 h12 z"></path>
+                </g>
+                <line x1="40" y1="176" x2="660" y2="176" stroke="#334155" stroke-width="6"></line>
+                <rect x="26" y="161" width="14" height="30" fill="#f59e0b"></rect>
+                <rect x="660" y="161" width="14" height="30" fill="#f59e0b"></rect>
+                <text x="350" y="200" text-anchor="middle" font-size="11" fill="#b45309">两端各接一个 50Ω 终端电阻，吸收信号反射；站点用吸血鬼接头分接</text>
+                <text x="350" y="226" text-anchor="middle" font-size="12" fill="#1e293b">任意站点发送 → 信号沿总线双向传播 → 所有站点都能收到（广播）</text>
+                <path d="M70,244 h36 M130,244 h36 M190,244 h36 M250,244 h36 M310,244 h36 M370,244 h36 M430,244 h36 M490,244 h36 M550,244 h36 M610,244 h36" stroke="#6366f1" stroke-width="2" stroke-dasharray="2 6"></path>
+                <text x="350" y="262" text-anchor="middle" font-size="11" fill="#4338ca">共享介质 → 需要 CSMA/CD：先听后说、边说边听、冲突退避</text>
+            </svg>
+            <figcaption>原始以太网的总线拓扑（教学示意，非原始图纸）：所有站点分接在同一根同轴电缆上，两端 50Ω 终端电阻抑制反射。总线是广播介质，这直接决定了以太网必须依赖 CSMA/CD 来仲裁发送权。</figcaption>
+        </figure>
 
         <p>这根同轴电缆就是所有设备共享的通信介质。任何一台计算机要发送数据，就把信号放到电缆上，所有其他计算机都能收到——这就是"广播"的本质。接收方检查数据帧中的目的地址：如果是给自己的，就收下；如果不是，就丢弃。发送前先侦听电缆上是否有信号（载波侦听），空闲时才发送；发送过程中持续监听，一旦发现冲突就立即停止，并等待一段随机时间后重试——这就是<strong>CSMA/CD（载波侦听多路访问/碰撞检测）</strong>的基本原理。关于CSMA/CD的详细机制，我们会在第6章专门展开。</p>
 
         <p>那么"以太"这个名字是怎么来的？Metcalfe取这个名字是为了致敬19世纪物理学中假想的"<strong>光以太（Luminiferous Ether）</strong>"——当时物理学家认为电磁波是在一种看不见的介质"以太"中传播的（直到迈克尔逊-莫雷实验否定了这一假说）。Metcalfe借用这个比喻，把同轴电缆比喻成了一种"电磁以太"，数据信号就像光波一样在这个"以太"中传播。名字取得这么有诗意，难怪能流传五十年。实际上，据说Metcalfe最初想用的名字是"Alto Aloha Network"（Alto版的ALOHAnet），但后来觉得"Ethernet"更酷——不得不说，这是一个非常正确的审美判断。</p>
 
-        <h3>1.5 DEC-Intel-Xerox联盟与开放标准</h3>
+        <h2>1.5 DEC-Intel-Xerox联盟与开放标准</h2>
 
         <p>到了1979年，以太网面临一个关键转折点。Xerox的高层终于意识到以太网的商业价值，但光靠施乐一家公司是不够的——任何网络技术的价值都取决于它的<strong>网络效应</strong>：用的人越多，它就越有价值。如果以太网变成施乐的专有技术，其他公司要么不愿意采用（担心被供应商锁定），要么需要支付高额授权费——这两种情况都会限制以太网的普及。</p>
 
@@ -187,13 +220,37 @@ May 22, 1973</code></pre>
 
         <p>1983年，IEEE 802.3工作组正式将以太网采纳为国际标准。虽然IEEE 802.3和Ethernet II在帧格式上有一个微小的差异（EtherType字段 vs. 长度字段），但这并不影响以太网的普及。实际上，IEEE后来在802.3x-1997修订中允许了两种格式共存，通过一个巧妙的方式区分：如果这个字段的值大于1536（0x0600），就解释为EtherType；否则解释为长度。这个细节我们会在第4章帧格式解析中详细讨论。</p>
 
+        <figure>
+            <svg viewBox="0 0 700 170" role="img" aria-label="以太网从 1973 年备忘录到 1983 年 IEEE 802.3 标准化的重要时间节点">
+                <title>以太网早期标准化时间线</title>
+                <text x="20" y="24" font-size="13" font-weight="700" fill="#1e293b">从个人草图到国际标准</text>
+                <line x1="40" y1="78" x2="660" y2="78" stroke="#6366f1" stroke-width="3"></line>
+                <path d="M650,78 l-12,-6 v12 z" fill="#6366f1"></path>
+                <g font-size="11" fill="#1e293b" text-anchor="middle">
+                    <g stroke="#4338ca" stroke-width="2"><line x1="80" y1="72" x2="80" y2="84"></line><line x1="225" y1="72" x2="225" y2="84"></line><line x1="370" y1="72" x2="370" y2="84"></line><line x1="515" y1="72" x2="515" y2="84"></line><line x1="650" y1="72" x2="650" y2="84"></line></g>
+                    <circle cx="80" cy="78" r="5" fill="#4338ca"></circle><text x="80" y="64" font-weight="700">1973</text>
+                    <text x="80" y="104" font-size="10">Metcalfe</text><text x="80" y="116" font-size="10">备忘录草图</text>
+                    <circle cx="225" cy="78" r="5" fill="#4338ca"></circle><text x="225" y="64" font-weight="700">1976</text>
+                    <text x="225" y="104" font-size="10">Metcalfe &amp; Boggs</text><text x="225" y="116" font-size="10">联合论文</text>
+                    <circle cx="370" cy="78" r="5" fill="#4338ca"></circle><text x="370" y="64" font-weight="700">1979</text>
+                    <text x="370" y="104" font-size="10">DIX 联盟成立</text><text x="370" y="116" font-size="10">DEC·Intel·Xerox</text>
+                    <circle cx="515" cy="78" r="5" fill="#4338ca"></circle><text x="515" y="64" font-weight="700">1980</text>
+                    <text x="515" y="104" font-size="10">蓝皮书 Ethernet 1.0</text><text x="515" y="116" font-size="10">提升到 10 Mbps</text>
+                    <circle cx="650" cy="78" r="5" fill="#4338ca"></circle><text x="650" y="64" font-weight="700">1983</text>
+                    <text x="650" y="104" font-size="10">IEEE 802.3</text><text x="650" y="116" font-size="10">国际标准</text>
+                </g>
+                <text x="350" y="150" text-anchor="middle" font-size="11" fill="#475569">1982 年 DIX 发布的 Ethernet 2.0（Ethernet II）帧格式沿用至今</text>
+            </svg>
+            <figcaption>以太网早期大事记：从 PARC 内部备忘录到 DIX 联盟的蓝皮书，再到 IEEE 802.3。标准化把公司专有技术变成了人人可用的开放接口，这是以太网胜出的制度前提。</figcaption>
+        </figure>
+
         <div class="highlight">
             <p><strong>关键历史节点</strong>：如果Xerox当时选择闭门造车，把以太网作为独家技术垄断起来，它很可能像很多PARC的其他伟大发明一样（比如GUI和鼠标），最终被历史遗忘。DIX联盟选择了一条截然不同的道路——<strong>开放标准</strong>。任何公司都可以以极低的费用（最初是"一次性支付1美元"）获得以太网规范的授权。这个决策，是以太网最终战胜Token Ring等竞争对手的决定性因素。</p>
         </div>
 
         <p>说到Token Ring，我想起一个亲身经历的故事。2010年我刚入行时，公司的一位老工程师给我看他曾经维护过的一个Token Ring网络——一个大型金融机构的交易系统。IBM的Token Ring技术在当时确实很优秀：确定性的延迟、没有碰撞、16 Mbps的速率在1980年代非常可观。但这个网络的维护成本高得惊人：专用的IBM MAU（类似于集线器）、价格数倍于以太网网卡的Token Ring适配器、还需要专业的IBM工程师来配置。当以太网交换机的价格在1990年代急剧下降、100 Mbps Fast Ethernet问世时，这家金融机构毫不犹豫地抛弃了Token Ring，全面转向了以太网。那位老工程师跟我说了一句话，我至今记忆犹新："技术上的优势，抵不过生态上的劣势。"</p>
 
-        <h3>1.6 以太网的哲学</h3>
+        <h2>1.6 以太网的哲学</h2>
 
         <p>以太网为什么能笑到最后？我认为有四个核心原因：</p>
 
@@ -219,7 +276,7 @@ May 22, 1973</code></pre>
             <a href="02.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
