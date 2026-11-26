@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第27章 800G/1.6T与400G/通道技术</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +47,16 @@
             <li><a href="27.html" class="active">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第27章 800G/1.6T与400G/通道技术</h2>
+        <h1>第27章 800G/1.6T与400G/通道技术</h1>
 
         <p>各位好。上一章我们聊了超以太网（UEC）如何从协议层面解决AI训练的网络瓶颈。但在UEC之下，还有一个更基础的物理层问题——<strong>带宽</strong>。软件层面的流控和负载均衡再优化，最终也要在物理链路上传输数据。如果链路本身不够快，再聪明的协议也白搭。</p>
 
         <p>今天我们来聊一个与我们的生活距离更近、但又充满技术"黑科技"的话题：以太网物理层的速率演进。从400G到800G，再到1.6T——这些数字是怎么来的？为什么不能用"更快的时钟"简单地翻倍？PAM4、PAM6、LPO、CPO——这些令人眼花缭乱的技术缩写背后，是工程师们在物理极限边缘的精彩博弈。</p>
 
-        <h3>27.1 为什么需要更高带宽？</h3>
+        <h2>27.1 为什么需要更高带宽？</h2>
 
         <p>简单的驱动因素是：AI集群的规模正在爆炸式增长。2023年大家还在讨论千卡集群，2024年万卡集群已经不再新鲜，到了2025-2026年，十万卡集群开始进入规划阶段。</p>
 
@@ -58,7 +64,7 @@
 
         <p>从另一个角度看，当前AI集群的瓶颈已经从"计算力"转移到了"互联力"。很多大模型训练的端到端效率只有30%-50%——换句话说，GPU有一半以上的时间在等待网络传输数据。提升网络带宽，就是直接释放GPU的计算潜力。这解释了两件事：一是为什么业界如此迫切地推进800G和1.6T，二是为什么UEC要把带宽利用率从40%提升到接近100%。</p>
 
-        <h3>27.2 SerDes速率演进</h3>
+        <h2>27.2 SerDes速率演进</h2>
 
         <p>以太网每向下一代速率迈进，本质上是<strong>SerDes（Serializer/Deserializer，串行器/解串器）</strong>速率的提升。SerDes是物理层最核心的组件：它把并行的数据流转换成串行信号发送出去，在接收端再把串行信号还原成并行数据。你可以把它想象成一个"高速公路收费站"——并行数据像多车道城市道路，串行信号像单车道高速公路。</p>
 
@@ -114,7 +120,7 @@
 
         <p>从这张表中你可以看到一个关键的"跳跃"：从28G到56G，调制方式从NRZ变成了PAM4。这不是巧合。当速率超过30 Gb/s以后，NRZ的信噪比（SNR）瓶颈变得不可逾越——信号频率太高，在PCB和线缆上的衰减过大，接收端已经无法可靠地判断"0"和"1"。PAM4的出现，相当于给SerDes打了一剂"强心针"。</p>
 
-        <h3>27.3 PAM4与PAM6的调制之争</h3>
+        <h2>27.3 PAM4与PAM6的调制之争</h2>
 
         <p>PAM4（4-Level Pulse Amplitude Modulation）的核心思想很简单：与其用"有信号"和"无信号"两个电平来表示一个bit（NRZ），不如用4个电平来表示两个bit。00、01、10、11分别对应四个不同的电压等级。这样一来，在同样的符号率（baud rate）下，数据传输速率翻倍。</p>
 
@@ -140,7 +146,37 @@
             <p><strong>PAM6的风险</strong>：PAM6在理论上的效率提升是诱人的，但实际工程中，它的DSP复杂度远高于PAM4。目前业界还没有形成统一意见——有些厂商认为PAM6要到400G/通道时才需要，在那之前224G SerDes用PAM4配合更复杂的DSP已经足够；另一些厂商则认为PAM6在224G阶段就应引入，以降低对信道和PCB的苛刻要求。这场争论的本质是"用DSP的复杂度换取信道容量的宽容度"——在摩尔定律放缓的今天，DSP的功耗和成本正在成为越来越重要的约束。</p>
         </div>
 
-        <h3>27.4 802.3dj：200G/通道的新标准</h3>
+        <figure>
+            <svg viewBox="0 0 720 230" role="img" aria-label="NRZ 与 PAM4 信号电平与眼图对比及 PAM4 的噪声余量损失">
+                <title>NRZ 与 PAM4 电平对比</title>
+                <text x="20" y="24" font-size="13" font-weight="700" fill="#1e293b">同样的符号率下，PAM4 用 4 电平把每符号拓成 2 bit</text>
+                <text x="40" y="56" font-size="11" font-weight="700" fill="#1e40af">NRZ：2 电平 / 1 bit</text>
+                <rect x="40" y="66" width="260" height="70" fill="#eff6ff" stroke="#93c5fd"></rect>
+                <line x1="40" y1="84" x2="300" y2="84" stroke="#3b82f6" stroke-width="3"></line>
+                <line x1="40" y1="120" x2="300" y2="120" stroke="#3b82f6" stroke-width="3"></line>
+                <text x="310" y="88" font-size="10" fill="#1d4ed8">1 电平</text>
+                <text x="310" y="124" font-size="10" fill="#1d4ed8">0 电平</text>
+                <text x="40" y="156" font-size="11" font-weight="700" fill="#166534">PAM4：4 电平 / 2 bit</text>
+                <rect x="40" y="166" width="260" height="52" fill="#f0fdf4" stroke="#86efac"></rect>
+                <g stroke="#16a34a" stroke-width="2.4">
+                    <line x1="40" y1="174" x2="300" y2="174"></line><line x1="40" y1="187" x2="300" y2="187"></line>
+                    <line x1="40" y1="200" x2="300" y2="200"></line><line x1="40" y1="212" x2="300" y2="212"></line>
+                </g>
+                <text x="310" y="180" font-size="9" fill="#166534">11 / 10 / 01 / 00</text>
+                <rect x="450" y="66" width="240" height="118" rx="8" fill="#fff7ed" stroke="#fdba74"></rect>
+                <text x="570" y="92" text-anchor="middle" font-size="11" font-weight="700" fill="#9a3412">眼高（噪声容限）</text>
+                <line x1="480" y1="110" x2="660" y2="110" stroke="#ea580c" stroke-width="3"></line>
+                <line x1="480" y1="126" x2="660" y2="126" stroke="#ea580c" stroke-width="3"></line>
+                <text x="570" y="112" text-anchor="middle" font-size="9" fill="#9a3412">NRZ 眼高</text>
+                <line x1="480" y1="152" x2="660" y2="152" stroke="#dc2626" stroke-width="3"></line>
+                <line x1="480" y1="158" x2="660" y2="158" stroke="#dc2626" stroke-width="3"></line>
+                <text x="570" y="150" text-anchor="middle" font-size="9" fill="#991b1b">PAM4 眼高 ≈ 1/3</text>
+                <text x="570" y="176" text-anchor="middle" font-size="9" fill="#9a3412">需额外 SNR ≈ 9.5 dB</text>
+            </svg>
+            <figcaption>PAM4 用四个电平在同样符号率下把速率翻倍，但相邻电平间距只有 NRZ 的三分之一，噪声容限随之下降，系统需要约 9.5 dB 的额外 SNR，这也是 PAM4 必须依赖 DSP 均衡的原因。（眼高比例与 9.5 dB 为按教科书推导的教学示意值）</figcaption>
+        </figure>
+
+        <h2>27.4 802.3dj：200G/通道的新标准</h2>
 
         <p>2023年，IEEE 802.3启动了<strong>802.3dj Task Force</strong>，目标是定义200 Gb/s每通道的物理层规范。802.3dj将成为未来5-10年以太网物理层最重要的标准，覆盖以下速率：</p>
 
@@ -155,7 +191,7 @@
 
         <p>与802.3dj并行推进的还有<strong>802.3dv</strong>——定义400G/通道的标准，目标速率3.2 TbE。这将是2028-2030年的技术。从"看远一点"的角度，以太网正在沿着每5-6年翻一倍速率的节奏前进，这个节奏从1980年代保持到了今天，是网络技术史上最惊人的持续演进之一。</p>
 
-        <h3>27.5 LPO：去掉DSP的革命</h3>
+        <h2>27.5 LPO：去掉DSP的革命</h2>
 
         <p>说完了调制，再来聊一个有趣的技术路线——<strong>LPO（Linear Pluggable Optics，线性可插拔光模块）</strong>。它的理念听起来有点反直觉：去掉光模块里的DSP。</p>
 
@@ -175,7 +211,7 @@
             <p><strong>行业动态</strong>：在2024-2025年的OFC（光纤通信大会）上，LPO是当之无愧的热点。多家光模块厂商展示了支持112G SerDes的LPO模块样机。到2026年，支持224G SerDes的LPO模块也开始出现。但LPO的推广仍然面临一个"鸡和蛋"的问题——交换机芯片厂商需要把DSP功能整合到交换芯片中，而交换芯片的设计周期长达3-4年，这使得LPO的规模部署要到2027年以后才能实现。</p>
         </div>
 
-        <h3>27.6 CPO与NPO：光引擎的革命</h3>
+        <h2>27.6 CPO与NPO：光引擎的革命</h2>
 
         <p>如果说LPO是把DSP从光模块移到交换机，那么<strong>CPO（Co-Packaged Optics，共封装光学）</strong>就更进一步——把整个光引擎直接封装到交换芯片的基板上。</p>
 
@@ -204,7 +240,7 @@
             <p><strong>技术路线之争</strong>：2026年的今天，业界对于"LPO vs CPO vs 传统DSP光模块"还没有定论。目前的主流判断是：未来两代（112G和224G SerDes）将是LPO和传统方案的混合部署；而到了400G/通道时代（约2030年），CPO很可能成为主流。因为400G/通道的信号频率已经高到无法在传统PCB上传输——你必须把光引擎和芯片尽可能地拉近。届时，以太网物理层将从"电互联"彻底转向"光互联"。</p>
         </div>
 
-        <h3>27.7 残酷的真实故事：400G到800G的升级阵痛</h3>
+        <h2>27.7 残酷的真实故事：400G到800G的升级阵痛</h2>
 
         <p>前面讲了很多理论，下面分享一个真实的"踩坑"案例。</p>
 
@@ -220,7 +256,7 @@
 
         <p>这个故事给我们的教训是：<strong>每一次以太网速率的跃升，都是对整个信号链路的全面体检</strong>。光纤、连接器、PCB、SFP/QSFP接口——任何一环的微小缺陷都会在更高速率下暴露。这也是为什么网络工程师的"手艺"——端接质量、清洁规范、线缆管理——在高速时代反而变得更加重要。</p>
 
-        <h3>27.8 下一站：400G/通道与3.2TbE</h3>
+        <h2>27.8 下一站：400G/通道与3.2TbE</h2>
 
         <p>展望未来，IEEE 802.3dv工作组已经开始定义400G/通道的物理层标准。基于224G SerDes的下一代产品将在2026-2027年进入规模部署，而基于400G/通道的3.2TbE则瞄准2029-2030年。</p>
 
@@ -236,7 +272,7 @@
             <a href="28.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>

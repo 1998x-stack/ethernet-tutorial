@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第28章 综合项目：企业网络设计</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +47,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html" class="active">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第28章 综合项目：企业网络设计</h2>
+        <h1>第28章 综合项目：企业网络设计</h1>
 
         <p>大家好，欢迎来到课程的最后一章。经过前面27章的学习，我们已经覆盖了以太网的方方面面——从起源精神到帧格式，从交换原理到STP/VLAN，从数据中心架构到UEC标准，再到800G物理层技术。现在，是时候把所有知识融会贯通了。</p>
 
         <p>本章将带你完整体验一个<strong>企业网络设计实战项目</strong>。你将从需求分析开始，一步步完成拓扑设计、VLAN规划、IP地址分配、安全策略制定、设备选型，最终输出一份完整的网络设计方案。这将是你从"学了网络知识"到"能做网络设计"的关键一跃。</p>
 
-        <h3>28.1 项目背景与需求分析</h3>
+        <h2>28.1 项目背景与需求分析</h2>
 
         <p>我们先来看项目背景。某科技公司计划搬迁至新建的总部园区，同时保留两个分支机构。网络需要支撑500+员工的日常工作以及双活数据中心业务。</p>
 
@@ -104,7 +110,7 @@
             </tr>
         </table>
 
-        <h3>28.2 拓扑设计</h3>
+        <h2>28.2 拓扑设计</h2>
 
         <p>基于上述需求，我们采用<strong>分层设计</strong>策略：总部使用Spine-Leaf架构确保高性能和扩展性，分支机构使用传统两层架构（接入层+汇聚层）。</p>
 
@@ -124,7 +130,46 @@
             <li>两地同时建立IPsec VPN作为专线中断时的第三路备份</li>
         </ul>
 
-        <h3>28.3 VLAN规划</h3>
+        <figure>
+            <svg viewBox="0 0 720 250" role="img" aria-label="企业网络综合项目拓扑：总部 Spine-Leaf、出口防火墙与分支互联">
+                <title>综合项目网络拓扑</title>
+                <text x="20" y="22" font-size="13" font-weight="700" fill="#1e293b">总部 Spine-Leaf + 出口冗余 + 分支 MPLS 互联</text>
+                <rect x="40" y="36" width="130" height="34" rx="7" fill="#f1f5f9" stroke="#94a3b8"></rect>
+                <text x="105" y="57" text-anchor="middle" font-size="10" fill="#334155">Internet / MPLS</text>
+                <rect x="215" y="36" width="120" height="34" rx="7" fill="#fee2e2" stroke="#f87171"></rect>
+                <text x="275" y="57" text-anchor="middle" font-size="10" fill="#991b1b">防火墙 A/B</text>
+                <rect x="380" y="36" width="120" height="34" rx="7" fill="#fee2e2" stroke="#f87171"></rect>
+                <text x="440" y="57" text-anchor="middle" font-size="10" fill="#991b1b">Active/Standby</text>
+                <g stroke="#c7d2fe" stroke-width="1.6">
+                    <line x1="170" y1="53" x2="215" y2="53"></line><line x1="335" y1="53" x2="380" y2="53"></line>
+                </g>
+                <g fill="#ede9fe" stroke="#8b5cf6">
+                    <rect x="200" y="106" width="120" height="36" rx="7"></rect><rect x="380" y="106" width="120" height="36" rx="7"></rect>
+                </g>
+                <g font-size="10" fill="#5b21b6" text-anchor="middle">
+                    <text x="260" y="129">Spine-1 (100G)</text><text x="440" y="129">Spine-2 (100G)</text>
+                </g>
+                <g stroke="#ddd6fe" stroke-width="1">
+                    <line x1="275" y1="70" x2="260" y2="106"></line><line x1="440" y1="70" x2="440" y2="106"></line>
+                </g>
+                <g fill="#dcfce7" stroke="#4ade80">
+                    <rect x="70" y="180" width="110" height="34" rx="6"></rect><rect x="200" y="180" width="110" height="34" rx="6"></rect>
+                    <rect x="330" y="180" width="110" height="34" rx="6"></rect><rect x="460" y="180" width="110" height="34" rx="6"></rect>
+                </g>
+                <g font-size="10" fill="#166534" text-anchor="middle">
+                    <text x="125" y="201">Leaf-1 办公</text><text x="255" y="201">Leaf-2 办公</text>
+                    <text x="385" y="201">Leaf-3 数据</text><text x="515" y="201">Leaf-4 WiFi</text>
+                </g>
+                <g stroke="#bbf7d0" stroke-width="1.4">
+                    <line x1="260" y1="142" x2="125" y2="180"></line><line x1="260" y1="142" x2="255" y2="180"></line>
+                    <line x1="440" y1="142" x2="385" y2="180"></line><line x1="440" y1="142" x2="515" y2="180"></line>
+                </g>
+                <text x="120" y="238" font-size="10" fill="#475569">分支（北京/深圳）：汇入 MPLS 专线，IPsec VPN 作为备份路径</text>
+            </svg>
+            <figcaption>综合项目拓扑：总部用两台 Spine 与多台 Leaf 组成可扩展的 Spine-Leaf，出口防火墙以主备方式双上联，办公/数据/无线流量按 Leaf 分隔；分支机构经 MPLS 专线回总部，并以 IPsec VPN 作为专线中断时的备份。</figcaption>
+        </figure>
+
+        <h2>28.3 VLAN规划</h2>
 
         <p>VLAN划分是网络设计的核心基础。整个园区按业务类型和楼层划分VLAN：</p>
 
@@ -205,7 +250,7 @@
             <p><strong>设计思路</strong>：VLAN 10-18这一段，"10"是全局员工网段，"11-18"是各楼层精细化子网。这样做的好处是三层路由只在Core交换机上做一次网关终结，各楼层之间跨VLAN通信走路由而不会广播泛滥。VLAN 30（管理网段）对所有交换机、AP、服务器BMC口统一管理——这在排查故障时非常有用，可以通过管理地址直接访问任何设备的OOB（带外管理）接口。</p>
         </div>
 
-        <h3>28.4 IP地址规划详表</h3>
+        <h2>28.4 IP地址规划详表</h2>
 
         <p>完整的IP地址规划如下。注意这里采用了"大段+子段"的方式——总部使用10.0.0.0/8内部分配，分部和访客使用172.16.0.0/12避免地址重叠。</p>
 
@@ -303,7 +348,7 @@
             </tr>
         </table>
 
-        <h3>28.5 STP策略与链路聚合</h3>
+        <h2>28.5 STP策略与链路聚合</h2>
 
         <p>在STP（生成树）方面，我们采用<strong>RSTP（快速生成树）</strong>配合<strong>MSTP（多生成树）</strong>实现VLAN负载均衡：</p>
 
@@ -319,7 +364,7 @@
             <p><strong>现实问题</strong>：在一次类似的部署中，我们曾经遇到过一个故障：某接入交换机端口下的服务器启用了NIC Teaming，但配置成了"Load Balancing"模式且两台服务器的网卡直连后又被接入了交换机——结果形成了二层的广播环路。虽然启用了STP，但因为PortFast和BPDU Guard没有在服务器端口开启，导致BPDU被"过滤"了，STP无法正确收敛，全网广播风暴持续了3分钟才被核心交换机用风暴控制切断。从那以后，我养成了所有服务器端口必须开启BPDU Guard的习惯。</p>
         </div>
 
-        <h3>28.6 安全策略设计</h3>
+        <h2>28.6 安全策略设计</h2>
 
         <p>企业网络的安全设计必须做到"纵深防御"——不能把安全寄托在单一机制上。</p>
 
@@ -357,7 +402,7 @@ deny ip 172.16.0.0 0.0.3.255 10.0.0.0 0.255.255.255
 ! Section 6: 默认拒绝所有其他流量
 deny ip any any</code></pre>
 
-        <h3>28.7 设备选型清单</h3>
+        <h2>28.7 设备选型清单</h2>
 
         <table>
             <tr>
@@ -434,7 +479,7 @@ deny ip any any</code></pre>
             </tr>
         </table>
 
-        <h3>28.8 监控与告警</h3>
+        <h2>28.8 监控与告警</h2>
 
         <p>网络建好只是第一步，长期稳定运行依赖于完善的监控体系。我们的监控方案采用"三层架构"：</p>
 
@@ -459,7 +504,7 @@ deny ip any any</code></pre>
             <p><strong>监控小贴士</strong>：不要"所有告警都通知"——否则运维团队很快就会对告警通知"免疫"。我们推荐的做法是：将告警分为三个等级——Critical（立即通知，电话+短信）、Warning（工作时间通知，邮件）、Info（仅记录不通知）。一个常见的错误是默认将所有SNMP trap都设为Critical，结果半夜0点交换机风扇故障降速（实际业务不受影响）的告警把运维人员叫醒，而真正的核心链路中断却被淹没在告警海洋中。</p>
         </div>
 
-        <h3>28.9 文档交付与验收</h3>
+        <h2>28.9 文档交付与验收</h2>
 
         <p>项目交付时，需要提交以下完整文档：</p>
 
@@ -525,7 +570,7 @@ deny ip any any</code></pre>
             </tr>
         </table>
 
-        <h3>28.10 从需求到交付：网络设计的完整闭环</h3>
+        <h2>28.10 从需求到交付：网络设计的完整闭环</h2>
 
         <p>回顾这个项目，我们从了解企业的业务需求出发，一步步做到了：</p>
 
@@ -544,7 +589,7 @@ deny ip any any</code></pre>
 
         <p>MAC寻址（第5章）→ VLAN划分（第9章）→ 链路聚合（第10章）→ STP（第8章）→ 安全（第14章）→ 数据中心架构（第16章）→ PoE（第17章）→ 故障排查（第18章）→ 监控测试（第24章）→ SDN（第25章）…… 每个知识点都在这个项目中找到了它的位置。</p>
 
-        <h3>写在最后：以太网的过去、现在与未来</h3>
+        <h2>写在最后：以太网的过去、现在与未来</h2>
 
         <p>亲爱的同学，当你读完这一章，我们的整个课程也就结束了。这28章课程，从1973年Xerox PARC的2.94 Mbps同轴电缆开始，一路走到了2026年的UEC 1.0和1.6TbE标准。51年时间，50万倍的速率增长，近千亿美元的产业规模——以太网的故事远超一个技术标准更替，它是一部关于开放、简单和持续进化的史诗。</p>
 
@@ -574,7 +619,7 @@ deny ip any any</code></pre>
             <a href="javascript:void(0)">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
