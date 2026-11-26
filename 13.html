@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第13章 以太网OAM与链路监控</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +47,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第13章 以太网OAM与链路监控</h2>
+        <h1>第13章 以太网OAM与链路监控</h1>
 
         <p>大家好。前面十二章我们学了以太网如何工作——从帧格式到交换转发，从STP到VLAN，从链路聚合到流控组播。现在假设你已经建好了一个网络，所有设备都按最佳实践配置了。问题来了：<strong>你怎么知道这个网络在正常运行？</strong>换句话说，当网络出现问题时——比如光纤断了、时延增加了、丢包率超标了——你如何<strong>第一时间发现并定位</strong>问题？</p>
 
         <p>这就引出了<strong>OAM（Operations, Administration, and Maintenance，运营、管理和维护）</strong>这个课题。在企业网络中，OAM可能只是"ping通了就算好"。但在运营商的<strong>运营商级以太网（Carrier Ethernet）</strong>中，OAM是一整套<strong>标准化</strong>的故障检测和性能监控体系。运营商和他们的企业客户可是签署了<strong>SLA（服务水平协议）</strong>的——承诺了99.99%的可用性和小于5毫秒的时延。如果不能有效监控，怎么知道是否达标？这一章我们就来学习以太网OAM的三个核心标准。</p>
 
-        <h3>13.1 为什么需要OAM</h3>
+        <h2>13.1 为什么需要OAM</h2>
 
         <p>在运营商的以太网专线场景中，你作为客户向运营商租用了一条从北京到上海的100 Mbps以太网专线。运营商的承诺是：每月可用性≥99.9%，平均时延≤20ms，丢包率≤0.1%。现在问题来了——某天你的应用报告说"连接不稳定"，你如何证明是运营商的链路出了问题而不是你自己的设备出了问题？</p>
 
@@ -63,7 +69,7 @@
             <li><strong>Y.1731</strong>：性能监控——丢包和时延测量</li>
         </ul>
 
-        <h3>13.2 802.1ag CFM：连通性故障管理</h3>
+        <h2>13.2 802.1ag CFM：连通性故障管理</h2>
 
         <p><strong>CFM（Connectivity Fault Management，连通性故障管理）</strong>由IEEE 802.1ag标准定义。它是运营商级以太网OAM的"基石"，负责回答一个问题：<strong>"端到端的二层连通性是否正常？"</strong></p>
 
@@ -105,7 +111,7 @@
 
         <p>注意CCM的目的MAC地址是<strong>01-80-C2-00-00-3X</strong>，其中X取决于MD Level。这些MAC地址属于"保留的组播MAC"，对于大多数交换机来说，它们默认不会转发给数据平面——这确保CFM报文在终点设备处被终结，不会转发到外部网络。这也是为什么CFM不会因为环路而风暴——它被设计为严格在维护域边界终结。</p>
 
-        <h3>13.3 Y.1731：性能监控</h3>
+        <h2>13.3 Y.1731：性能监控</h2>
 
         <p>如果说CFM回答的是"连通吗？"这个问题，那么ITU-T推荐的<strong>Y.1731</strong>标准回答的就是"<strong>有多好？</strong>"——它定义了延迟、丢包、抖动等性能指标的精确测量方法。</p>
 
@@ -127,7 +133,7 @@
             <p><strong>实用技巧</strong>：在实际网络中，双向时延测量比单向时延测量更常用——因为双向测量不需要精确的时间同步，实现成本低。但如果你想诊断"单向时延不对称"的问题（比如光纤收发器故障导致发送和接收路径的时延不同），就必须使用单向时延测量（需要PTP时间同步）。我们后面会讲一个这方面的真实案例。</p>
         </div>
 
-        <h3>13.4 802.3ah EFM：链路级OAM</h3>
+        <h2>13.4 802.3ah EFM：链路级OAM</h2>
 
         <p><strong>EFM（Ethernet in the First Mile，第一英里以太网）</strong>由IEEE 802.3ah定义，后来被纳入802.3标准。它是工作在<strong>以太网物理层和MAC层之间</strong>的OAM机制，主要关注<strong>单条点对点链路</strong>的健康状况。</p>
 
@@ -142,7 +148,7 @@
 
         <p>EFM在光纤接入（FTTx）和运营商最后一公里场景中广泛应用。例如，OLT（光线路终端）和ONU（光网络单元）之间的链路使用EFM来监控光模块的收发光功率、链路错误率等。</p>
 
-        <h3>13.5 层次化OAM：客户、服务与传输</h3>
+        <h2>13.5 层次化OAM：客户、服务与传输</h2>
 
         <p>在运营商级以太网中，OAM不是单一层次的——它遵循一个<strong>层次化模型</strong>，典型的分为三层：</p>
 
@@ -154,7 +160,36 @@
 
         <p>这种层次化的好处是：各层可以独立地进行故障检测和隔离。如果客户报故障，运营商先检查自己的服务层OAM——如果服务层正常，说明问题可能在客户侧；如果服务层也异常，运营商再检查传输层——这样一层层排查，快速定位故障点。</p>
 
-        <h3>13.6 三大OAM标准对比</h3>
+        <figure>
+            <svg viewBox="0 0 720 280" role="img" aria-label="客户层、服务层与传输层三层 OAM 各自的维护域端点示意图">
+                <title>层次化 OAM 的三层维护域</title>
+                <text x="20" y="24" font-size="13" font-weight="700" fill="#1e293b">三层 OAM：每一层独立检测，故障被逐层隔离</text>
+                <line x1="20" y1="60" x2="700" y2="60" stroke="#cbd5e1" stroke-width="1"></line>
+                <line x1="20" y1="150" x2="700" y2="150" stroke="#cbd5e1" stroke-width="1"></line>
+                <text x="20" y="98" font-size="12" font-weight="700" fill="#1d4ed8">客户层</text>
+                <text x="20" y="116" font-size="10" fill="#475569">企业总部</text>
+                <rect x="120" y="74" width="60" height="34" rx="6" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="150" y="95" text-anchor="middle" font-size="11" fill="#1e40af">CE-A</text>
+                <rect x="540" y="74" width="60" height="34" rx="6" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="570" y="95" text-anchor="middle" font-size="11" fill="#1e40af">CE-B</text>
+                <line x1="180" y1="91" x2="540" y2="91" stroke="#1d4ed8" stroke-width="2" stroke-dasharray="6 4"></line>
+                <text x="360" y="66" text-anchor="middle" font-size="10" fill="#1d4ed8">客户 MEP ↔ 客户 MEP（端到端 SLA）</text>
+                <text x="20" y="188" font-size="12" font-weight="700" fill="#047857">服务层</text>
+                <text x="20" y="206" font-size="10" fill="#475569">运营商边缘</text>
+                <rect x="200" y="164" width="70" height="34" rx="6" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="235" y="185" text-anchor="middle" font-size="11" fill="#166534">PE-1</text>
+                <rect x="450" y="164" width="70" height="34" rx="6" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="485" y="185" text-anchor="middle" font-size="11" fill="#166534">PE-2</text>
+                <line x1="270" y1="181" x2="450" y2="181" stroke="#047857" stroke-width="2" stroke-dasharray="6 4"></line>
+                <text x="360" y="156" text-anchor="middle" font-size="10" fill="#047857">服务 MEP ↔ 服务 MEP（运营商内部）</text>
+                <text x="20" y="248" font-size="12" font-weight="700" fill="#b45309">传输层</text>
+                <text x="110" y="248" font-size="10" fill="#475569">WDM/OTN/SDH 光层，关注光功率与误码</text>
+                <line x1="110" y1="256" x2="690" y2="256" stroke="#b45309" stroke-width="2"></line>
+            </svg>
+            <figcaption>OAM 的三层分工：客户层 MEP 负责端到端 SLA 指标，服务层 MEP 负责运营商网络内部的传输质量，传输层关注物理介质（光功率、误码率）。任一层报障后先在本层观察，再向下一层收敛，从而把故障点逐层隔离出来。</figcaption>
+        </figure>
+
+        <h2>13.6 三大OAM标准对比</h2>
 
         <table>
             <tr>
@@ -207,7 +242,7 @@
             </tr>
         </table>
 
-        <h3>13.7 单纤故障的单向时延异常</h3>
+        <h2>13.7 单纤故障的单向时延异常</h2>
 
         <div class="warning">
             <p><strong>真实案例</strong>：某金融公司通过运营商的以太网专线连接北京和上海的数据中心，进行实时交易数据的同步。运维人员发现，北京→上海方向的传输时延在每天下午的交易高峰期从正常的18ms飙升至38ms，而上海→北京方向始终保持在18ms左右。因为交易数据是双向同步的，单向时延异常直接影响了交易系统的性能。</p>
@@ -217,7 +252,7 @@
 
         <p>这个案例完美说明了标准化OAM的价值——在SLA违约发生之前就发现潜在问题，并能够精确地定位到故障点。如果没有Y.1731的单向时延测量，运维团队可能需要花费数周甚至数月来排查这个"幽灵"问题。</p>
 
-        <h3>13.8 总结与预告</h3>
+        <h2>13.8 总结与预告</h2>
 
         <p>这一章我们学习了以太网的OAM体系。从802.3ah EFM的链路级监控和Dying Gasp，到802.1ag CFM的层次化连通性检测和故障定位，再到Y.1731的精确性能测量——这三种OAM标准共同构成了运营商级以太网的"体检系统"。它们让网络管理员能够回答最重要的三个问题：连通吗？有多好？出了故障在哪里？</p>
 
@@ -229,7 +264,7 @@
             <a href="14.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>

@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第14章 MACsec与链路层安全</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,10 +47,10 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第14章 MACsec与链路层安全</h2>
+        <h1>第14章 MACsec与链路层安全</h1>
 
         <p>大家好。前面十三章我们学的内容，有一个隐含的假设：<strong>网络是可信的</strong>。我们假设网线是安全的，交换机是安全的，在你的网络里没有人能窃听或篡改你的数据帧。但在现实中，这个假设并不总是成立。</p>
 
@@ -52,7 +58,7 @@
 
         <p>那么，以太网有没有自己的链路层安全机制？有的——这就是<strong>MACsec（Media Access Control Security，媒体访问控制安全）</strong>，由IEEE 802.1AE标准定义。</p>
 
-        <h3>14.1 为什么要在链路层加密</h3>
+        <h2>14.1 为什么要在链路层加密</h2>
 
         <p>你可能会说："我可以在应用层用HTTPS，或者用IPsec VPN，为什么还需要 MACsec？"</p>
 
@@ -66,7 +72,7 @@
 
         <p>简而言之：如果你需要保护<strong>网络内部</strong>的链路不被窃听和篡改，MACsec是最合适的选择。特别是对于数据中心内部的服务器间流量、园区网络的核心互联链路、以及运营商的以太网专线，MACsec提供了一层"透明"的安全——上层应用和协议完全不知道MACsec的存在，但底层的每一条链路都经过了加密和认证。</p>
 
-        <h3>14.2 MACsec帧格式：SecTAG、加密载荷与ICV</h3>
+        <h2>14.2 MACsec帧格式：SecTAG、加密载荷与ICV</h2>
 
         <p>MACsec在标准的以太网帧中插入了一个<strong>安全标签（SecTAG）</strong>，并对帧的载荷进行加密。加密后的MACsec帧格式如下：</p>
 
@@ -83,6 +89,36 @@
                     |   | Packet Number (4或8字节)|  |
                     |   +-------------------------+  |
                     +---- SecTAG 结构 --------------+</code></pre>
+
+        <figure>
+            <svg viewBox="0 0 720 220" role="img" aria-label="MACsec 帧字段布局，展示 SecTAG 插入位置与 ICV 校验区域">
+                <title>MACsec 帧格式与 SecTAG 结构</title>
+                <text x="20" y="24" font-size="13" font-weight="700" fill="#1e293b">MACsec 帧：在源 MAC 与载荷之间插入 SecTAG</text>
+                <rect x="20" y="44" width="90" height="46" rx="5" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="65" y="72" text-anchor="middle" font-size="11" fill="#1e40af">目的 MAC</text>
+                <rect x="110" y="44" width="80" height="46" rx="5" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="150" y="72" text-anchor="middle" font-size="11" fill="#1e40af">源 MAC</text>
+                <rect x="190" y="44" width="110" height="46" rx="5" fill="#fef3c7" stroke="#f59e0b"></rect>
+                <text x="245" y="72" text-anchor="middle" font-size="11" fill="#92400e">SecTAG 8/16B</text>
+                <rect x="300" y="44" width="250" height="46" rx="5" fill="#e2e8f0" stroke="#94a3b8"></rect>
+                <text x="425" y="66" text-anchor="middle" font-size="11" fill="#334155">加密载荷</text>
+                <text x="425" y="80" text-anchor="middle" font-size="9" fill="#64748b">EtherType 之后全部加密</text>
+                <rect x="550" y="44" width="80" height="46" rx="5" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="590" y="72" text-anchor="middle" font-size="11" fill="#166534">ICV 8/16B</text>
+                <text x="20" y="120" font-size="11" font-weight="700" fill="#92400e">SecTAG 展开</text>
+                <rect x="20" y="132" width="90" height="40" rx="5" fill="#fef3c7" stroke="#f59e0b"></rect>
+                <text x="65" y="149" text-anchor="middle" font-size="10" fill="#92400e">EtherType</text>
+                <text x="65" y="163" text-anchor="middle" font-size="10" fill="#92400e">0x88E5</text>
+                <rect x="110" y="132" width="130" height="40" rx="5" fill="#fef3c7" stroke="#f59e0b"></rect>
+                <text x="175" y="149" text-anchor="middle" font-size="10" fill="#92400e">TCI / AN</text>
+                <text x="175" y="163" text-anchor="middle" font-size="9" fill="#b45309">版本·ES·SC·AN(0~3)</text>
+                <rect x="240" y="132" width="150" height="40" rx="5" fill="#fef3c7" stroke="#f59e0b"></rect>
+                <text x="315" y="149" text-anchor="middle" font-size="10" fill="#92400e">Packet Number</text>
+                <text x="315" y="163" text-anchor="middle" font-size="9" fill="#b45309">递增，防重放 2^32/2^64</text>
+                <text x="420" y="156" font-size="10" fill="#475569">PN 一旦回绕，必须换安全信道重新协商密钥</text>
+            </svg>
+            <figcaption>MACsec 不加密目的/源 MAC 与 SecTAG（交换机需要它们转发），只加密 EtherType 之后的载荷，并用 ICV 保护整帧完整性。SecTAG 中的 PN 严格递增，用于阻断重放。</figcaption>
+        </figure>
 
         <p>让我们逐字段分析：</p>
 
@@ -101,7 +137,7 @@
             <p><strong>实用技巧</strong>：MACsec的EtherType 0x88E5保留在IEEE的EtherType注册表中。如果你在Wireshark中看到大量0x88E5的帧，说明链路上启用了MACsec。可以通过"wireshark的MACsec解析器"来查看SecTAG中的TCI/AN和PacketNumber字段，这对于验证MACsec是否正常工作非常有用。注意：在Wireshark捕获的MACsec帧中，载荷部分是加密的，你只能看到SecTAG和ICV，看不到内部的IP和TCP/UDP头部。</p>
         </div>
 
-        <h3>14.3 GCM-AES：加密与完整性的一次性完成</h3>
+        <h2>14.3 GCM-AES：加密与完整性的一次性完成</h2>
 
         <p>MACsec使用<strong>GCM（Galois/Counter Mode，伽罗瓦计数器模式）</strong>作为加密模式，配合<strong>AES（Advanced Encryption Standard，高级加密标准）</strong>作为底层对称加密算法。GCM模式最大的特点是：<strong>同时提供加密和完整性校验</strong>，而且只需要一次密码学运算。</p>
 
@@ -121,7 +157,7 @@
 
         <p>PN字段和重放保护也是MACsec安全性的重要组成部分。每个安全信道维护一个严格递增的全局PN计数器。接收方维护一个<strong>重放窗口</strong>——默认情况下，MACsec要求PN严格递增，不允许缺失或重复。但在某些场景下（比如链路聚合中的乱序到达），可以通过配置更宽松的重放窗口（如允许PN相差不超过某个阈值）来兼容乱序。</p>
 
-        <h3>14.4 MKA：密钥怎么安全分发？</h3>
+        <h2>14.4 MKA：密钥怎么安全分发？</h2>
 
         <p>说了这么多加密，一个根本问题还没解决：<strong>密钥从哪里来？</strong>MACsec是对称加密——链路两端的设备必须持有相同的密钥。如果密钥通过明文方式分发，攻击者截获了密钥，加密就形同虚设。</p>
 
@@ -142,7 +178,7 @@
             <p><strong>关于"预共享密钥"模式</strong>：在不需要集中认证的场景中（比如两个数据中心之间的直连专线），MACsec可以简化为<strong>预共享密钥（Pre-Shared Key, PSK）</strong>模式。两端手动配置相同的CAK和CKN（Connectivity Association Key Name），MKA使用这些预配的密钥完成后续的密钥推导和会话建立。PSK模式配置简单，不依赖RADIUS服务器，但缺点是不支持中心的密钥撤销——如果某台的密钥泄露了，你需要手动更新所有使用相同PSK的设备。</p>
         </div>
 
-        <h3>14.5 MACsec vs IPsec vs TLS</h3>
+        <h2>14.5 MACsec vs IPsec vs TLS</h2>
 
         <p>三种主流的加密协议适用于不同的场景。下面对它们做一个全面对比：</p>
 
@@ -211,7 +247,7 @@
 
         <p>从对比可以看出，MACsec、IPsec和TLS并不是竞争关系，而是<strong>相互补充</strong>的。在实际部署中，它们可以组合使用：数据中心内部链路使用MACsec保护，跨数据中心的连接使用IPsec VPN，对外暴露的Web服务使用HTTPS（TLS）。这样每一层都有加密保护，形成<strong>纵深防御（Defense in Depth）</strong>。</p>
 
-        <h3>14.6 金融数据中心的内部攻击教训</h3>
+        <h2>14.6 金融数据中心的内部攻击教训</h2>
 
         <div class="warning">
             <p><strong>真实案例</strong>：201X年，某大型金融机构的数据中心发生了一起震惊行业的安全事件。一个内部员工在数据中心机房的弱电间里，在一台核心交换机上悄悄地配置了一个<strong>端口镜像（Port Mirroring）</strong>，将服务器A到服务器B的所有流量复制到了一个他可控的监控端口上。服务器A和B之间传输的是未经任何加密的数据库同步流量（数据库复制协议没有启用TLS）。</p>
@@ -221,7 +257,7 @@
 
         <p>这个故事的教训是深刻的：<strong>网络安全不能只关注边界</strong>。"城堡+护城河"的安全模型已经不够了——一旦攻击者进入了内部（无论是通过物理入侵还是通过攻破一台边缘设备），内部链路上的明文流量就成了"待宰的羔羊"。MACsec提供了一个简单而有效的解决方案：让网络内部的所有链路都加密，使任何形式的窃听和篡改在链路层就失效。</p>
 
-        <h3>14.7 总结与预告</h3>
+        <h2>14.7 总结与预告</h2>
 
         <p>这一章我们学习了MACsec——以太网链路层的安全加密协议。我们从为什么需要链路层加密开始，详细分析了MACsec的帧格式（SecTAG、加密载荷、ICV）、GCM-AES的加密认证机制、MKA密钥协商协议的工作流程，并对比了MACsec与IPsec、TLS在适用场景上的差异。最后，一个真实的数据中心内部攻击案例说明了为什么"内部链路加密"不是可选项，而是必要项。</p>
 
@@ -233,7 +269,7 @@
             <a href="15.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
