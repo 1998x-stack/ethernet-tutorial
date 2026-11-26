@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第15章 园区网络设计实战</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +47,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第15章 园区网络设计实战</h2>
+        <h1>第15章 园区网络设计实战</h1>
 
         <p>大家好，欢迎回到以太网通信课程。在前面十四章里，我们从以太网的起源一路学到了链路层安全。现在，是时候把这些知识串起来，真正动手设计一个大型网络了。</p>
 
         <p>你可能会有这样的问题："学了那么多协议和标准，到底怎么用？公司要建一个能容纳几千人的园区网络，我应该从哪儿开始？"这一章，我们就来解决这个问题。我们将以一所3万人的大学校园网为案例，完整走一遍园区网络的设计过程——从需求分析、架构选择、设备选型到高可用设计。这不是纸上谈兵，每一个决策背后都有真实的工程考量。</p>
 
-        <h3>15.1 园区网络的业务需求</h3>
+        <h2>15.1 园区网络的业务需求</h2>
 
         <p>在画拓扑图之前，必须先搞清楚一个根本问题：这个网络要满足什么业务需求？对于任何园区网络，以下三个需求是共通的：</p>
 
@@ -64,7 +70,7 @@
             <p><strong>经验之谈</strong>：很多刚入行的工程师喜欢在各处追求"最新最强的技术"，但真正成熟的网络设计往往是最"无聊"的——架构清晰简化、技术成熟稳健、运维文档完善。记住：一个"酷炫但没人会维护"的网络，比一个"平庸但运维团队闭着眼都能修"的网络糟糕得多。</p>
         </div>
 
-        <h3>15.2 三层架构：接入层、汇聚层、核心层</h3>
+        <h2>15.2 三层架构：接入层、汇聚层、核心层</h2>
 
         <p>园区网络设计的基石是<strong>三层分层模型</strong>。这不是什么复杂的理论，而是工程经验的总结。它的核心思想很简单：把网络划分为三个层次，每层承担特定的功能，层与层之间通过标准接口互联。</p>
 
@@ -100,7 +106,41 @@
         │Sw-01│ │Sw-02│ │Sw-03 │ │Sw-04 │ │Sw-05 │ │Sw-06 │ │Sw-07 │ │Sw-08 │
         └─────┘ └─────┘ └──────┘ └──────┘ └──────┘ └──────┘ └──────┘ └──────┘</code></pre>
 
-        <h3>15.3 设备选型的关键指标</h3>
+        <figure>
+            <svg viewBox="0 0 720 250" role="img" aria-label="园区网络接入层、汇聚层、核心层三层分层拓扑示意图">
+                <title>园区网络三层架构</title>
+                <text x="20" y="24" font-size="13" font-weight="700" fill="#1e293b">三层架构：接入层堆端口密度，汇聚层做策略与路由，核心层只管快速转发</text>
+                <rect x="150" y="40" width="180" height="42" rx="8" fill="#ede9fe" stroke="#8b5cf6"></rect>
+                <rect x="360" y="40" width="180" height="42" rx="8" fill="#ede9fe" stroke="#8b5cf6"></rect>
+                <text x="240" y="66" text-anchor="middle" font-size="11" fill="#5b21b6">核心层 Core-A</text>
+                <text x="450" y="66" text-anchor="middle" font-size="11" fill="#5b21b6">核心层 Core-B</text>
+                <text x="20" y="66" font-size="11" font-weight="700" fill="#5b21b6">核心层</text>
+                <line x1="240" y1="82" x2="240" y2="110" stroke="#c7d2fe" stroke-width="2"></line>
+                <line x1="450" y1="82" x2="450" y2="110" stroke="#c7d2fe" stroke-width="2"></line>
+                <rect x="40" y="110" width="150" height="42" rx="8" fill="#dcfce7" stroke="#4ade80"></rect>
+                <rect x="280" y="110" width="150" height="42" rx="8" fill="#dcfce7" stroke="#4ade80"></rect>
+                <rect x="520" y="110" width="150" height="42" rx="8" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="115" y="136" text-anchor="middle" font-size="11" fill="#166534">汇聚 Building 1</text>
+                <text x="355" y="136" text-anchor="middle" font-size="11" fill="#166534">汇聚 Building 2</text>
+                <text x="595" y="136" text-anchor="middle" font-size="11" fill="#166534">汇聚 Building 3</text>
+                <text x="20" y="136" font-size="11" font-weight="700" fill="#166534">汇聚层</text>
+                <g stroke="#bbf7d0" stroke-width="2">
+                    <line x1="115" y1="152" x2="60" y2="186"></line><line x1="115" y1="152" x2="115" y2="186"></line><line x1="115" y1="152" x2="170" y2="186"></line>
+                    <line x1="355" y1="152" x2="300" y2="186"></line><line x1="355" y1="152" x2="355" y2="186"></line><line x1="355" y1="152" x2="410" y2="186"></line>
+                    <line x1="595" y1="152" x2="540" y2="186"></line><line x1="595" y1="152" x2="595" y2="186"></line><line x1="595" y1="152" x2="650" y2="186"></line>
+                </g>
+                <g fill="#dbeafe" stroke="#60a5fa">
+                    <rect x="35" y="186" width="50" height="34" rx="5"></rect><rect x="90" y="186" width="50" height="34" rx="5"></rect><rect x="145" y="186" width="50" height="34" rx="5"></rect>
+                    <rect x="275" y="186" width="50" height="34" rx="5"></rect><rect x="330" y="186" width="50" height="34" rx="5"></rect><rect x="385" y="186" width="50" height="34" rx="5"></rect>
+                    <rect x="515" y="186" width="50" height="34" rx="5"></rect><rect x="570" y="186" width="50" height="34" rx="5"></rect><rect x="625" y="186" width="50" height="34" rx="5"></rect>
+                </g>
+                <text x="20" y="208" font-size="11" font-weight="700" fill="#1e40af">接入层</text>
+                <text x="35" y="240" font-size="10" fill="#64748b">接入交换机堆端口密度与 802.1X / MAC 绑定，接入层只上送不路由</text>
+            </svg>
+            <figcaption>三层分层：核心层只负责高速转发（两台框式交换机冗余），汇聚层承担 VLAN 终结、ACL 与 STP 根桥，接入层负责端口密度与接入安全。层次分开后，任一层扩容或故障都不会直接波及另一层。</figcaption>
+        </figure>
+
+        <h2>15.3 设备选型的关键指标</h2>
 
         <p>选设备不能只看品牌和价格。以下四个指标是必须考察的：</p>
 
@@ -155,7 +195,7 @@
             <p><strong>选型陷阱</strong>：一些厂商会标注"交换容量"而非"背板带宽"，这两个概念有时被混用，但实际含义不同。交换容量（Switching Capacity）通常指ASIC的转发能力，而背板带宽（Backplane Bandwidth）指背板总线的物理传输能力。还有些厂商会用"所有端口双向速率之和"来计算一个漂亮的数字，但实际上端口不可能同时以线速全双工工作。务必要求厂商提供"线速转发"条件下的实测数据。</p>
         </div>
 
-        <h3>15.4 堆叠与虚拟化技术</h3>
+        <h2>15.4 堆叠与虚拟化技术</h2>
 
         <p>三层架构解决了网络的组织问题，但还有一个关键挑战：单点故障。如果一台汇聚层交换机宕机，所有连接它的接入交换机都会失联。解决方案就是将多台交换机"组合"成一台逻辑设备——这就是<strong>堆叠（Stacking）</strong>和<strong>虚拟化（Virtualization）</strong>技术。</p>
 
@@ -167,7 +207,7 @@
 
         <p>二是<strong>亚秒级故障切换</strong>。当虚拟化集群中的一台设备故障时，控制平面会迅速将流量切换到健康设备，切换时间通常在50-200毫秒之间——用户几乎无感知。</p>
 
-        <h3>15.5 高可用设计的三个层面</h3>
+        <h2>15.5 高可用设计的三个层面</h2>
 
         <p>高可用设计不能只看设备本身，必须覆盖以下三个层面：</p>
 
@@ -192,7 +232,7 @@
          vrrp vrid 1 virtual-ip 192.168.100.1
          vrrp vrid 1 priority 100</code></pre>
 
-        <h3>15.6 完整案例：某大学3万用户校园网</h3>
+        <h2>15.6 完整案例：某大学3万用户校园网</h2>
 
         <p>我们用上面所有知识，来设计一个真实场景下的校园网络。</p>
 
@@ -235,7 +275,7 @@
             <p><strong>关键设计决策</strong>：这个方案中没有使用STP来防止环路。为什么？因为接入层通过双链路Eth-Trunk连接到汇聚/核心的IRF集群，Eth-Trunk本身支持负载分担和链路冗余，不需要STP来阻塞端口。这避免了STP拓扑变更带来的收敛延迟。但代价是什么？——要求汇聚层和核心层必须支持跨设备链路聚合（即IRF/VSS），对设备能力要求更高。</p>
         </div>
 
-        <h3>15.7 一个真实的"踩坑"故事</h3>
+        <h2>15.7 一个真实的"踩坑"故事</h2>
 
         <p>我在2016年参与过一个园区网络的升级项目。这个网络运行了五年，突然出现一个极其诡异的故障：全网间歇性断网，每次持续1-3分钟，每天发生4-5次，没有任何规律。检查链路、检查光模块、检查STP——全都没发现问题。</p>
 
@@ -253,7 +293,7 @@
             <a href="16.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
