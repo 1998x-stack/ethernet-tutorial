@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第23章 Wireshark抓包分析实战</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +47,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第23章 Wireshark抓包分析实战</h2>
+        <h1>第23章 Wireshark抓包分析实战</h1>
 
         <p>大家好，欢迎来到第23章。前两章我们聊了虚拟化和Overlay网络，那些技术虽然先进，但终归是"看不见摸不着"的东西。你有没有遇到过这样的情况：系统管理员说"网络没有问题"，而应用团队坚称"网络很慢"——双方各执一词，谁也没有证据？这种时候，你需要一件能"让数据说话"的利器：<strong>Wireshark</strong>。</p>
 
         <p>Wireshark的前身是Ethereal，1998年由Gerald Combs创建。二十多年来，它已经成为网络分析领域的事实标准——任何以太网工程师的工具箱里，Wireshark都是排在首位的必备工具。它不仅能让你"看到"网线里流动的每一个比特，还能帮你定位那些深藏不露的协议交互问题。毫不夸张地说：会抓包的人和不会抓包的人，排查网络故障的效率差了一个数量级。</p>
 
-        <h3>23.1 Wireshark界面概览</h3>
+        <h2>23.1 Wireshark界面概览</h2>
 
         <p>第一次打开Wireshark，你可能会被密密麻麻的面板吓到。拆开来其实就三大块：</p>
 
@@ -62,7 +68,7 @@
 
         <p>整体布局可以自定义——你可以拖拽调整各面板的大小，甚至可以把不常用的面板隐藏起来。刚开始建议保持默认布局，等熟悉了再按需调整。</p>
 
-        <h3>23.2 捕获过滤器与显示过滤器</h3>
+        <h2>23.2 捕获过滤器与显示过滤器</h2>
 
         <p>这是Wireshark里最容易混淆的一对概念。很多初学者在这上面吃了大亏：明明设置了过滤器，结果抓到的包要么太多要么太少。</p>
 
@@ -249,7 +255,36 @@ frame.time_relative > 5.0</code></pre>
             <p><strong>使用技巧</strong>：在Wireshark的显示过滤器输入框中输入时，按<kbd>Tab</kbd>键会自动补全字段名。如果看到输入框背景是<strong>绿色</strong>，说明语法正确；<strong>红色</strong>表示有语法错误；<strong>黄色</strong>表示Wireshark不保证该表达式一定是你要的意思（通常是字段名存在歧义）。另外，右键点击某个数据包里的字段，选择"Apply as Filter"可以直接生成对应的过滤器表达式——这是学习显示过滤器语法最好的方式。</p>
         </div>
 
-        <h3>23.3 TCP流追踪与应用层协议分析</h3>
+        <figure>
+            <svg viewBox="0 0 720 210" role="img" aria-label="捕获过滤器与显示过滤器在数据路径上的作用位置对比">
+                <title>捕获过滤器 vs 显示过滤器</title>
+                <text x="20" y="24" font-size="13" font-weight="700" fill="#1e293b">两把过滤器：一把在抓包前丢包，一把在存包后隐藏</text>
+                <rect x="30" y="52" width="140" height="52" rx="8" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="100" y="76" text-anchor="middle" font-size="11" fill="#1e40af">网卡 / 内核</text>
+                <text x="100" y="92" text-anchor="middle" font-size="9" fill="#64748b">线缆上的全部帧</text>
+                <rect x="230" y="52" width="160" height="52" rx="8" fill="#fee2e2" stroke="#f87171"></rect>
+                <text x="310" y="74" text-anchor="middle" font-size="11" font-weight="700" fill="#991b1b">捕获过滤器 (BPF)</text>
+                <text x="310" y="92" text-anchor="middle" font-size="9" fill="#7f1d1d">内核态执行，不匹配就丢弃</text>
+                <rect x="450" y="52" width="140" height="52" rx="8" fill="#e2e8f0" stroke="#94a3b8"></rect>
+                <text x="520" y="76" text-anchor="middle" font-size="11" fill="#334155">捕获缓冲区</text>
+                <text x="520" y="92" text-anchor="middle" font-size="9" fill="#64748b">已落地的报文</text>
+                <g stroke="#64748b" stroke-width="2" fill="#64748b">
+                    <line x1="170" y1="78" x2="228" y2="78"></line><path d="M228,78 L218,73 L218,83 z"></path>
+                    <line x1="390" y1="78" x2="448" y2="78"></line><path d="M448,78 L438,73 L438,83 z"></path>
+                </g>
+                <path d="M310,104 C310,150 90,150 90,106" fill="none" stroke="#ef4444" stroke-width="1.6" stroke-dasharray="5 4"></path>
+                <text x="150" y="156" font-size="9" fill="#b91c1c">丢弃（不占内存/CPU）</text>
+                <rect x="450" y="132" width="240" height="52" rx="8" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="570" y="154" text-anchor="middle" font-size="11" font-weight="700" fill="#166534">显示过滤器</text>
+                <text x="570" y="172" text-anchor="middle" font-size="9" fill="#14532d">用户态，仅隐藏，随时可改</text>
+                <line x1="560" y1="104" x2="560" y2="130" stroke="#22c55e" stroke-width="2"></line>
+                <path d="M560,130 L555,120 L565,120 z" fill="#22c55e"></path>
+                <text x="30" y="200" font-size="10" fill="#475569">大流量先用 BPF 缩范围，再在已有报文上用显示过滤器做组合查询</text>
+            </svg>
+            <figcaption>捕获过滤器运行在内核态、在报文落地前就丢弃无关流量，能降低抓包开销但不可逆；显示过滤器在抓包完成后工作，只隐藏不丢弃，语法更丰富且可随时调整。两者是分析流程的前后两级。</figcaption>
+        </figure>
+
+        <h2>23.3 TCP流追踪与应用层协议分析</h2>
 
         <p>Wireshark最实用的功能之一就是<strong>TCP流追踪（Follow TCP Stream）</strong>。你在包列表里右键点击任意一个TCP包，选择"Follow → TCP Stream"，Wireshark会筛选出属于同一个TCP连接的所有包，并按顺序把应用层数据拼接起来展示。如果你抓的是HTTP请求，你能看到原始的HTTP请求头和响应体；如果是SMTP，你能看到邮件内容和命令交互过程；如果是FTP，你能看到登录用户名和密码（明文传输的"魅力"）。</p>
 
@@ -261,7 +296,7 @@ frame.time_relative > 5.0</code></pre>
             <p><strong>实战案例：重建HTTP文件</strong>：如果你抓到了完整的HTTP文件传输流量（比如一个未加密的图片下载），可以通过Follow TCP Stream把文件提取出来。在"Follow TCP Stream"窗口里，选择"Show data as → Raw"，然后把数据保存为二进制文件。这样即使原文件已经被删除，你仍然可以从抓包文件中恢复出来。这个技巧在取证分析中非常有用。</p>
         </div>
 
-        <h3>23.4 着色规则与自定义Profile</h3>
+        <h2>23.4 着色规则与自定义Profile</h2>
 
         <p>Wireshark默认自带一套<strong>着色规则（Coloring Rules）</strong>。浅蓝色背景是DNS流量、浅绿色是HTTP流量、淡紫色是ARP、淡红色是ICMP、深色背景（黑底白字）是TCP重传……这样一来，你扫一眼包列表就能大致了解当前流量特征。比如一连串深色的包，十有八九是TCP重传风暴，值得深入排查。</p>
 
@@ -269,7 +304,7 @@ frame.time_relative > 5.0</code></pre>
 
         <p>如果你需要切换不同的抓包分析场景（比如日常监控 vs 安全审计 vs 应用层调试），Wireshark的<strong>Profile</strong>功能能帮你管理不同的配置集合。"Edit → Configuration Profiles"可以创建新的Profile，每个Profile可以独立保存：着色规则、显示过滤器按钮栏、列配置、布局设置等等。比如我自己的"Debug"Profile专门预置了TCP分析的过滤器按钮（重传、零窗口、SACK等），而"Security"Profile则预置了ARP欺骗检测、DHCP异常检测等过滤器。切换Profile只需要点一下右下角的Profile下拉框，非常方便。</p>
 
-        <h3>23.5 命令行工具：tshark与capinfos</h3>
+        <h2>23.5 命令行工具：tshark与capinfos</h2>
 
         <p>Wireshark的图形界面虽然强大，但在服务器上、在自动化脚本中、或者处理超大抓包文件时，你就需要它的命令行兄弟们了。</p>
 
@@ -319,7 +354,7 @@ editcap -r 1-1000 huge_capture.pcapng sample.pcapng
 # 删除重复包
 editcap -d huge_capture.pcapng dedup.pcapng</code></pre>
 
-        <h3>23.6 完整实例：分析TCP重传风暴</h3>
+        <h2>23.6 完整实例：分析TCP重传风暴</h2>
 
         <p>现在让我们用一个完整的实战案例来串联前面学到的知识。假设你收到一个告警：某台数据库服务器的连接质量急剧下降，应用响应时间从5ms飙升到2秒以上。你在数据库服务器上抓了一份pcapng文件，需要分析到底发生了什么。</p>
 
@@ -345,7 +380,7 @@ tcp.stream eq 42 and tcp.analysis.retransmission</code></pre>
             <p><strong>踩坑提醒</strong>：分析重传时要注意区分"真正的重传"和"快速重传"。Wireshark会用不同颜色标记它们（深黑标为"Retransmission"，浅灰标为"Fast Retransmission"）。快速重传是TCP的一种优化机制——当发送方收到三个重复ACK时，不等超时计时器就立即重传。如果抓包中快速重传较多但实际重传较少，说明TCP的快速恢复机制在正常工作，问题不算严重；反过来，如果出现大量真正的超时重传（RTO），那就说明网络问题比较严重了。另外，在抓包前一定要确认时间和时区设置正确——如果时间戳偏差超过几毫秒，TCP的时间序列图就会完全不可用。</p>
         </div>
 
-        <h3>23.7 一个真实的"踩坑"故事</h3>
+        <h2>23.7 一个真实的"踩坑"故事</h2>
 
         <p>几年前我接手了一个排查任务：某客户端的Web API响应时间平均在800ms左右，但其中一个特定的服务（获取用户订单列表）却需要3到5秒。应用团队排除了SQL查询效率问题（数据库查询本身只要50ms），后端团队排除了业务逻辑问题（去掉网络时间后的处理时间只有30ms）。那么时间到底花在了哪儿？</p>
 
@@ -365,7 +400,7 @@ tcp.stream eq 42 and tcp.analysis.retransmission</code></pre>
             <a href="24.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>

@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第24章 网络性能测试与基准</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +47,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第24章 网络性能测试与基准</h2>
+        <h1>第24章 网络性能测试与基准</h1>
 
         <p>大家好，欢迎来到第24章。上一章我们学会了用Wireshark"看"网络的质量——看有没有重传、看延迟、看TCP窗口。但"看"是定性的，"测"才是定量的。很多工程师容易陷入一个误区：看到交换机端口指示灯亮绿灯就觉得"网络没问题"，看到流量跑起来了就觉得"带宽是够的"。但实际呢？"网络很慢"到底有多慢？"网络很快"到底有多快？这些都需要用数据说话。</p>
 
         <p>这就是<strong>网络性能测试</strong>要做的事。它不是简单测一个"宽带速度"，而是系统性地测量网络四个核心维度：<strong>吞吐量（Throughput）</strong>、<strong>时延（Latency）</strong>、<strong>抖动（Jitter）</strong>和<strong>丢包率（Packet Loss）</strong>。这四个指标构成了网络性能的完整画像，缺一不可。</p>
 
-        <h3>24.1 网络性能的四个维度</h3>
+        <h2>24.1 网络性能的四个维度</h2>
 
         <p><strong>吞吐量（Throughput）</strong>是最直观的指标——单位时间内能传输的数据量，通常以bps（bits per second）衡量。千兆以太网的理论吞吐量上限大约是940 Mbps（扣除帧头、帧间隙和前导码的开销后），万兆以太网大约是9.4 Gbps。吞吐量反映了网络链路能"喂饱"上层的最大能力。</p>
 
@@ -64,7 +70,7 @@
             <p><strong>关键认知</strong>：这四个维度是相互影响的。当链路利用率接近饱和时，交换机队列开始填满，导致时延增加（排队时延），进而触发TCP拥塞控制减少发送窗口——最终表现为吞吐量下降。所以任何一个维度的恶化，都可能引发其他维度的连锁反应。性能测试的关键就在于找到这四个维度之间的平衡点。</p>
         </div>
 
-        <h3>24.2 iperf3详解</h3>
+        <h2>24.2 iperf3详解</h2>
 
         <p>iperf3是目前最流行的网络性能测量工具，由ESnet（美国能源部科学网络）开发和维护。它采用客户端-服务器架构，能测量TCP和UDP两种模式下的吞吐量。它的设计哲学是"简单、专注、可重复"——不像一些商业测试工具那样功能繁杂，但它的测试结果在行业内被广泛认可。</p>
 
@@ -209,7 +215,44 @@ iperf3 -s
             <p><strong>实用技巧</strong>：测试前一定要确认服务端和客户端的系统参数已经优化过。特别是TCP缓冲区大小——如果默认的socket buffer太小（通常Linux默认只有128KB），高带宽长距离链路的性能会严重受限。一个经验法则是：<strong>带宽延迟积（BDP）</strong>决定了所需的最小缓冲区大小。BDP = 带宽 × RTT。例如千兆链路、RTT=20ms，BDP = 1Gbps × 20ms = 20Mb ≈ 2.5MB。这意味着你需要将TCP窗口至少设置为2.5MB才能填满这条链路。可以用<code>sysctl -w net.core.wmem_max=8388608</code>来调整，配合iperf3的<code>-w</code>参数使用。</p>
         </div>
 
-        <h3>24.3 RFC 2544标准测试</h3>
+        <figure>
+            <svg viewBox="0 0 720 230" role="img" aria-label="iperf3 测试拓扑与吞吐、时延、抖动、丢包四个性能维度示意图">
+                <title>网络性能测试的四个维度</title>
+                <text x="20" y="24" font-size="13" font-weight="700" fill="#1e293b">先量四个维度，再谈“快不快”</text>
+                <rect x="40" y="44" width="130" height="48" rx="8" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="105" y="73" text-anchor="middle" font-size="11" fill="#1e40af">iperf3 -c（客户端）</text>
+                <rect x="300" y="44" width="120" height="48" rx="8" fill="#e2e8f0" stroke="#94a3b8"></rect>
+                <text x="360" y="66" text-anchor="middle" font-size="11" fill="#334155">被测链路 / DUT</text>
+                <text x="360" y="82" text-anchor="middle" font-size="9" fill="#64748b">待测转发路径</text>
+                <rect x="560" y="44" width="120" height="48" rx="8" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="620" y="73" text-anchor="middle" font-size="11" fill="#166534">iperf3 -s（服务端）</text>
+                <g stroke="#64748b" stroke-width="2" fill="#64748b">
+                    <line x1="170" y1="68" x2="298" y2="68"></line><path d="M298,68 L288,63 L288,73 z"></path>
+                    <line x1="420" y1="68" x2="558" y2="68"></line><path d="M558,68 L548,63 L548,73 z"></path>
+                </g>
+                <g>
+                    <rect x="40" y="130" width="150" height="70" rx="8" fill="#eef2ff" stroke="#818cf8"></rect>
+                    <text x="115" y="154" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">吞吐量</text>
+                    <text x="115" y="172" text-anchor="middle" font-size="9" fill="#475569">单流 vs -P 多流</text>
+                    <text x="115" y="188" text-anchor="middle" font-size="9" fill="#475569">受窗口 / 拥塞控制限制</text>
+                    <rect x="205" y="130" width="150" height="70" rx="8" fill="#fef3c7" stroke="#f59e0b"></rect>
+                    <text x="280" y="154" text-anchor="middle" font-size="11" font-weight="700" fill="#92400e">时延</text>
+                    <text x="280" y="172" text-anchor="middle" font-size="9" fill="#475569">RTT / 单向时延</text>
+                    <text x="280" y="188" text-anchor="middle" font-size="9" fill="#475569">需 PTP 才能测单向</text>
+                    <rect x="370" y="130" width="150" height="70" rx="8" fill="#fce7f3" stroke="#f472b6"></rect>
+                    <text x="445" y="154" text-anchor="middle" font-size="11" font-weight="700" fill="#9d174d">抖动</text>
+                    <text x="445" y="172" text-anchor="middle" font-size="9" fill="#475569">Jitter</text>
+                    <text x="445" y="188" text-anchor="middle" font-size="9" fill="#475569">实时音视频敏感</text>
+                    <rect x="535" y="130" width="150" height="70" rx="8" fill="#fee2e2" stroke="#f87171"></rect>
+                    <text x="610" y="154" text-anchor="middle" font-size="11" font-weight="700" fill="#991b1b">丢包</text>
+                    <text x="610" y="172" text-anchor="middle" font-size="9" fill="#475569">Lost / Total</text>
+                    <text x="610" y="188" text-anchor="middle" font-size="9" fill="#475569">UDP 模式才报丢包</text>
+                </g>
+            </svg>
+            <figcaption>iperf3 用客户端-服务端模型测量时，至少要同时看四个维度：吞吐、时延、抖动、丢包。TCP 模式测的是可达吞吐，UDP 固定速率模式才能暴露真实丢包与抖动，单流不满时用 -P 多流压链路。</figcaption>
+        </figure>
+
+        <h2>24.3 RFC 2544标准测试</h2>
 
         <p>如果你需要更正式的网络性能评估，那就绕不开<strong>RFC 2544</strong>。这个RFC由IETF在1999年发布，定义了网络互连设备性能测试的标准化方法。虽然已经发布了快三十年，但它仍然是网络设备测试领域的黄金标准。RFC 2544定义了四个核心测试项目：</p>
 
@@ -225,7 +268,7 @@ iperf3 -s
             <p><strong>实施RFC 2544的注意事项</strong>：在实际测试中，必须确保<strong>测试仪本身不是瓶颈</strong>。如果测试主机是一台普通的x86服务器，你可能需要以下优化：1) 关闭中断合并（ethtool -C eth0 rx-usecs 0 tx-usecs 0）；2) 将测试进程绑定到特定的CPU核心（taskset）；3) 使用DPDK或AF_XDP绕过内核协议栈以获得更精准的微秒级时间戳。如果这些条件都不具备，至少也要确认测试主机的性能上限远高于被测链路的标称速率——否则你测出来的不是网络的性能，而是自己主机的性能上限。</p>
         </div>
 
-        <h3>24.4 测试中的常见陷阱</h3>
+        <h2>24.4 测试中的常见陷阱</h2>
 
         <p>做网络性能测试看起来简单（"不就是跑个iperf3吗？"），但实际上有很多隐蔽的陷阱。我见过无数工程师因为没注意这些细节得出了错误的结论：</p>
 
@@ -237,7 +280,7 @@ iperf3 -s
 
         <p><strong>陷阱四：中断合并（coalescing）导致的假象。</strong>现代网卡默认启用中断合并——将多个小包的接收中断合并为一个中断，以减少CPU开销。这个机制在正常工作负载下非常有效，但在性能测试中会引入额外的毫秒级延迟，让你以为网络延迟很大。测试时可以用<code>ethtool -C eth0 rx-usecs 0 tx-usecs 0</code>关闭中断合并。</p>
 
-        <h3>24.5 一个真实的"踩坑"故事</h3>
+        <h2>24.5 一个真实的"踩坑"故事</h2>
 
         <p>这个故事发生在我参与的一个数据中心迁移项目中。新数据中心布好线缆后，机房团队拿着Fluke测试仪通过了所有链路的"通断测试"——物理层没有问题。然后我们上服务器做"千兆验收测试"。</p>
 
@@ -261,7 +304,7 @@ iperf3 -s
             <a href="25.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
