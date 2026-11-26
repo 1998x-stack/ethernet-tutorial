@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第17章 以太网供电(PoE)</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,10 +47,10 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第17章 以太网供电（PoE）</h2>
+        <h1>第17章 以太网供电（PoE）</h1>
 
         <p>想象这样一个场景：你是一个企业的IT运维工程师，要为办公区部署50台IP电话和30个无线AP。按照常规思路，你需要做两件事——拉网线传数据、拉电源线供电。但问题来了：IP电话和AP通常安装在吊顶天花板上或墙壁高处，附近根本没有电源插座。为每一个设备单独拉一根220V电源线？成本高、布线丑、电工还要和弱电施工协调工期。</p>
 
@@ -52,7 +58,7 @@
 
         <p>这听起来像"黑魔法"——数据和电流在同一条铜线上并行传输，互相不干扰。但它的原理其实非常朴素。这一章我们就来深入探讨PoE的工作原理、标准演进、供电协商过程，以及在实际部署中你会遇到的那些"坑"。</p>
 
-        <h3>17.1 PoE的基本原理</h3>
+        <h2>17.1 PoE的基本原理</h2>
 
         <p>以太网使用的双绞线（Twisted Pair）中有4对线。在10BASE-T和100BASE-TX中，实际数据传输只使用了其中的2对（1-2和3-6），另外2对（4-5和7-8）是空闲的。PoE最早的思路就是在空闲线对上传输直流电——这简单直接，互不干扰。</p>
 
@@ -68,7 +74,7 @@
             <p><strong>一个容易混淆的点</strong>：很多人以为PoE只能在以太网上使用，其实PoE的核心标准（IEEE 802.3af/at/bt）定义的是通过以太网线缆供电的方法，它依赖的是线缆的物理特性，而不是以太网协议本身。只是在实际应用中，PoE几乎总是和以太网设备配合使用，所以"PoE = 以太网设备无需单独供电"这个印象深入人心。</p>
         </div>
 
-        <h3>17.2 供电过程：四步协商</h3>
+        <h2>17.2 供电过程：四步协商</h2>
 
         <p>PoE供电不是简单粗暴地"直接送电"。在PSE向PD送电之前，必须经过一个<strong>四步协商过程</strong>，确保安全：</p>
 
@@ -97,7 +103,38 @@
         │
         └─── 检测 → 分级 → 供电 → (持续监控) → 断电</code></pre>
 
-        <h3>17.3 PoE标准四代演进</h3>
+        <figure>
+            <svg viewBox="0 0 720 220" role="img" aria-label="PoE 供电四步协商的状态流程与端口电压变化">
+                <title>PoE 四步供电协商</title>
+                <text x="20" y="24" font-size="13" font-weight="700" fill="#1e293b">PoE 四步协商：先探测身份，再分级，后送电，持续监控</text>
+                <g>
+                    <rect x="30" y="50" width="140" height="52" rx="9" fill="#dbeafe" stroke="#60a5fa"></rect>
+                    <text x="100" y="72" text-anchor="middle" font-size="11" font-weight="700" fill="#1e40af">① 检测</text>
+                    <text x="100" y="90" text-anchor="middle" font-size="9" fill="#475569">2.8~10V / 25kΩ 特征电阻</text>
+                    <rect x="210" y="50" width="140" height="52" rx="9" fill="#e0e7ff" stroke="#818cf8"></rect>
+                    <text x="280" y="72" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">② 分级</text>
+                    <text x="280" y="90" text-anchor="middle" font-size="9" fill="#475569">15~20V / Class 0~4</text>
+                    <rect x="390" y="50" width="140" height="52" rx="9" fill="#dcfce7" stroke="#4ade80"></rect>
+                    <text x="460" y="72" text-anchor="middle" font-size="11" font-weight="700" fill="#166534">③ 供电</text>
+                    <text x="460" y="90" text-anchor="middle" font-size="9" fill="#475569">44~57V 工作电压</text>
+                    <rect x="570" y="50" width="120" height="52" rx="9" fill="#f1f5f9" stroke="#94a3b8"></rect>
+                    <text x="630" y="72" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">④ 断电</text>
+                    <text x="630" y="90" text-anchor="middle" font-size="9" fill="#475569">维持电流 < 5~10mA</text>
+                </g>
+                <g stroke="#94a3b8" stroke-width="2" fill="#94a3b8">
+                    <line x1="170" y1="76" x2="208" y2="76"></line><path d="M208,76 L198,71 L198,81 z"></path>
+                    <line x1="350" y1="76" x2="388" y2="76"></line><path d="M388,76 L378,71 L378,81 z"></path>
+                    <line x1="530" y1="76" x2="568" y2="76"></line><path d="M568,76 L558,71 L558,81 z"></path>
+                </g>
+                <path d="M630,102 C630,150 100,150 100,102" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="6 4"></path>
+                <path d="M100,102 L95,112 L105,112 z" fill="#f59e0b"></path>
+                <text x="365" y="158" text-anchor="middle" font-size="10" fill="#b45309">电流持续低于阈值 → 切断并重新回到检测</text>
+                <text x="30" y="196" font-size="10" fill="#475569">非 PD 设备（电阻不在窗口内）永远停在检测阶段，不会被误上电</text>
+            </svg>
+            <figcaption>PoE 供电不是直接送电：PSE 先在低压下探测特征电阻识别合法 PD，再分级确定功率，然后才切到 44~57V 工作电压；供电期间持续监控电流，一旦低于维持阈值即切断并重新检测。</figcaption>
+        </figure>
+
+        <h2>17.3 PoE标准四代演进</h2>
 
         <p>PoE技术自2003年标准化以来经历了四代演进，每代的供电能力都有显著提升：</p>
 
@@ -153,7 +190,7 @@
 
         <p>从802.3bt开始，标准引入了<strong>4对线同时供电（4PPoE）</strong>——所有4对双绞线都用来供电，每对线上的电流只有原来的一半，线损显著降低。这是实现60W和90W高功率供电的关键技术。</p>
 
-        <h3>17.4 LLDP电源管理与智能协商</h3>
+        <h2>17.4 LLDP电源管理与智能协商</h2>
 
         <p>基础的分级（Classification）只能告诉PSE设备的功率等级（class 0-8），但这个等级是粗粒度的。802.3at和802.3bt引入了基于<strong>LLDP（Link Layer Discovery Protocol，链路层发现协议）</strong>的精细电源管理机制。</p>
 
@@ -174,7 +211,7 @@
             <p><strong>LLDP的实用价值</strong>：在部署高密度的PoE网络时，LLDP电力管理可以让交换机在总功率有限的情况下实现"削峰填谷"。例如一台PoE交换机总功率预算为740W，下挂24个802.11ax AP。每个AP的峰值功耗为25W，24个同时峰值需要600W——足够了。但如果在夜间所有AP切换到最大射频功率做背景扫描，功耗可能上升。通过LLDP，交换机可以实时掌握每个AP的当前功耗，合理分配预算，避免过载导致整机断电保护。</p>
         </div>
 
-        <h3>17.5 PoE的典型应用场景</h3>
+        <h2>17.5 PoE的典型应用场景</h2>
 
         <p>PoE的应用早已超越了最初的IP电话。今天，它几乎无处不在：</p>
 
@@ -186,7 +223,7 @@
 
         <p><strong>新兴应用。</strong>PoE LED照明（每个灯具15-30W）、数字标牌（40-60W）、POS收银终端（10-20W）、甚至通过PoE供电的瘦客户机/笔记本电脑（802.3bt Type 4达到90W后，小型笔记本电脑的充电问题也解决了）。</p>
 
-        <h3>17.6 一个真实的"踩坑"故事：夜间重启之谜</h3>
+        <h2>17.6 一个真实的"踩坑"故事：夜间重启之谜</h2>
 
         <p>2019年，我为一个园区部署了约200个海康威视的PoE安防摄像头。交换机使用的是支持802.3at的PoE+交换机，每端口30W。摄像头的标称功耗是12W（红外关闭）到22W（红外开启），按理说完全在预算之内。</p>
 
@@ -212,7 +249,7 @@
             <a href="18.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>

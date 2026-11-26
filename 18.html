@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第18章 以太网故障排查方法论</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,10 +47,10 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第18章 以太网故障排查方法论</h2>
+        <h1>第18章 以太网故障排查方法论</h1>
 
         <p>大家好。在前面三章里，我们学会了如何设计园区网、数据中心和PoE供电网络。但任何一个网络工程师都知道一个残酷的事实：<strong>没有不出故障的网络</strong>。区别只在于——出了问题你花10分钟解决，还是花三天三夜解决。</p>
 
@@ -52,7 +58,7 @@
 
         <p>这一章不是教你"背故障案例"——网络故障千奇百怪，背不完。这一章教你的是一种<strong>可复制的方法论</strong>：面对任何网络故障，你都能用一套标准流程来缩小范围、定位根因、验证修复。你学到的不是鱼，而是渔。</p>
 
-        <h3>18.1 分层排查策略：从下到上</h3>
+        <h2>18.1 分层排查策略：从下到上</h2>
 
         <p>OSI七层模型不仅仅是一张考试用的图表——它是最强大的网络排查框架。你可能会觉得"分层排查"太慢了（"一层层查要查到什么时候？"），但请相信我：<strong>跳过一层的代价往往是让你绕一大圈回到原点</strong>。</p>
 
@@ -72,7 +78,32 @@
             <p><strong>跳过物理层的陷阱</strong>：有一个经典案例——某新部署的数据中心里，两台服务器之间的TCP连接频繁超时重传，丢包率约5%。工程师花了三天分析TCP窗口、调整内核参数、更换网卡驱动。最后发现原因是一根光纤尾纤的弯曲半径过小（< 5mm），导致光信号衰减过大——物理层在报CRC错误，数据链路层频繁重传，TCP层感知为"丢包"。如果一开始就检查光模块的发光功率和误码率，30分钟就能定位问题。</p>
         </div>
 
-        <h3>18.2 关键统计量与错误计数器</h3>
+        <figure>
+            <svg viewBox="0 0 720 250" role="img" aria-label="从物理层到应用层的自下而上分层故障排查顺序图">
+                <title>自下而上的分层排查</title>
+                <text x="20" y="24" font-size="13" font-weight="700" fill="#1e293b">分层排查：从最便宜、最容易验证的物理层开始往下走</text>
+                <g>
+                    <rect x="60" y="42" width="420" height="32" rx="6" fill="#dbeafe" stroke="#60a5fa"></rect>
+                    <text x="76" y="63" font-size="11" fill="#1e40af">① 物理层：链路灯、线缆、光功率、FCS/CRC</text>
+                    <rect x="60" y="80" width="420" height="32" rx="6" fill="#e0e7ff" stroke="#818cf8"></rect>
+                    <text x="76" y="101" font-size="11" fill="#3730a3">② 数据链路层：STP、VLAN、MAC 表、双工/速率协商</text>
+                    <rect x="60" y="118" width="420" height="32" rx="6" fill="#ede9fe" stroke="#a78bfa"></rect>
+                    <text x="76" y="139" font-size="11" fill="#5b21b6">③ 网络层：IP、掩码、网关、路由表（ping / traceroute）</text>
+                    <rect x="60" y="156" width="420" height="32" rx="6" fill="#fef3c7" stroke="#f59e0b"></rect>
+                    <text x="76" y="177" font-size="11" fill="#92400e">④ 传输层：端口监听、ACL、TCP 三次握手 / 重传</text>
+                    <rect x="60" y="194" width="420" height="32" rx="6" fill="#dcfce7" stroke="#4ade80"></rect>
+                    <text x="76" y="215" font-size="11" fill="#166534">⑤ 应用层：DNS、证书、认证、应用配置</text>
+                </g>
+                <line x1="520" y1="210" x2="520" y2="52" stroke="#94a3b8" stroke-width="2"></line>
+                <path d="M520,52 L514,64 L526,64 z" fill="#94a3b8"></path>
+                <text x="540" y="130" font-size="11" fill="#475569">递进方向</text>
+                <text x="540" y="150" font-size="10" fill="#64748b">先低成本验证，</text>
+                <text x="540" y="164" font-size="10" fill="#64748b">再逐步上位</text>
+            </svg>
+            <figcaption>分层排查不是每一层都慢吞吞地查一遍，而是从成本最低、最容易验证的物理层开始逐层向上。跳过物理层去调 TCP 参数，是代价最高的弯道。</figcaption>
+        </figure>
+
+        <h2>18.2 关键统计量与错误计数器</h2>
 
         <p>交换机上的错误计数器是诊断网络问题的"金矿"。大多数工程师只看端口"Up/Down"状态，但真正有价值的信息隐藏在以下计数器里：</p>
 
@@ -86,7 +117,7 @@
 
         <p><strong>Collision & Late Collision。</strong>Collision在半双工模式下是正常的（CSMA/CD的工作方式），但Late Collision在任何模式下都是异常的。Late Collision意味着在帧的前64字节已经被发送出去之后才检测到冲突——通常是由双工不匹配或线缆过长引起的。</p>
 
-        <h3>18.3 常见故障模式与诊断表</h3>
+        <h2>18.3 常见故障模式与诊断表</h2>
 
         <table>
             <tr>
@@ -144,7 +175,7 @@
             <p><strong>诊断口诀</strong>：先看灯，再看表，最后翻日志。LED灯能在5秒内告诉你物理层是否正常；错误计数器能在30秒内告诉你链路质量如何；日志能告诉你过去发生了什么。按照这个顺序排查，80%的故障能在10分钟内定位。</p>
         </div>
 
-        <h3>18.4 四种典型故障深入分析</h3>
+        <h2>18.4 四种典型故障深入分析</h2>
 
         <p><strong>模式一：双工不匹配。</strong></p>
 
@@ -197,7 +228,7 @@
         # 成功与失败的分界线就是路径MTU（PMTUD）
         # 逐跳测试可以定位MTU不匹配的具体链路</code></pre>
 
-        <h3>18.5 完整实录：一个历时三天的环网故障</h3>
+        <h2>18.5 完整实录：一个历时三天的环网故障</h2>
 
         <p>2020年，我负责运维的一个园区网络出现了一个非常隐蔽的故障。某天上午10:00，监控系统突然告警——办公楼B栋的约200个有线终端全部离线。奇怪的是，5分钟后部分终端自动恢复，但仍有约80个终端持续掉线。更奇怪的是，连接这些终端的接入交换机显示端口状态均为Up——物理层没有问题。</p>
 
@@ -221,7 +252,7 @@
             <a href="19.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
