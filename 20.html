@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第20章 汽车以太网</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +47,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第20章 汽车以太网</h2>
+        <h1>第20章 汽车以太网</h1>
 
         <p>大家好，欢迎来到第20章。上一章我们聊了TSN——那个让以太网学会"准时"的技术。你可能已经注意到了，我在提到TSN的应用场景时频繁提到了一个领域：汽车。这不是巧合。在今天的汽车里，以太网正在经历一场"从无到有、从辅助到核心"的蜕变。如果你最近买过一辆新款车，它的ADAS摄像头、360环视系统、甚至车载娱乐系统，很可能已经在使用以太网了。</p>
 
         <p>传统汽车网络协议——CAN、LIN、FlexRay——曾经陪伴汽车电子走过了三十多年的历程。但到了2020年代，它们遇到了一个无法回避的瓶颈：<strong>带宽不够</strong>。一台L3级自动驾驶汽车每天产生的数据量高达数个TB，CAN的1 Mbps和CAN FD的8 Mbps在这种量级面前完全是杯水车薪。汽车行业需要一种真正的高带宽、低延迟、标准化的网络技术。答案只有一个：以太网。</p>
 
-        <h3>20.1 为什么汽车需要以太网</h3>
+        <h2>20.1 为什么汽车需要以太网</h2>
 
         <p>在以太网进入汽车之前，车内网络是一个"诸侯割据"的局面：</p>
 
@@ -65,7 +71,7 @@
 
         <p>正是在这种背景下，<strong>汽车以太网（Automotive Ethernet）</strong>应运而生。它可以概括为"针对汽车环境优化过的以太网物理层技术"——核心思想是保留以太网的MAC层和上层协议（IP/UDP/TCP/DoIP等），但重新设计物理层以适应汽车的严苛要求：低成本、低功耗、低EMI、轻量化的单对非屏蔽双绞线。</p>
 
-        <h3>20.2 100BASE-T1 (802.3bw)：开山之作</h3>
+        <h2>20.2 100BASE-T1 (802.3bw)：开山之作</h2>
 
         <p>汽车以太网第一个真正大规模商用的物理层标准是<strong>100BASE-T1</strong>（IEEE 802.3bw，2015年）。它有三个关键特征：</p>
 
@@ -90,7 +96,28 @@
 
         <p>100BASE-T1最初由Broadcom开发并命名为BroadR-Reach，后来被IEEE标准化为802.3bw。2015年，宝马在其i8和X5车型中率先量产搭载了100BASE-T1摄像头链路——这是汽车以太网走向商业化的标志性事件。</p>
 
-        <h3>20.3 1000BASE-T1 (802.3bp) 与更高速率</h3>
+        <figure>
+            <svg viewBox="0 0 720 230" role="img" aria-label="汽车以太网物理层标准对比：单对双绞线、速率与线束长度">
+                <title>汽车以太网 PHY 标准对比</title>
+                <text x="20" y="24" font-size="13" font-weight="700" fill="#1e293b">汽车以太网：保留 MAC，重做物理层以适应单对线、低 EMI、低功耗</text>
+                <g font-size="11" fill="#1e293b" font-weight="700">
+                    <text x="30" y="62">标准</text><text x="180" y="62">速率</text><text x="300" y="62">线缆</text><text x="470" y="62">距离</text>
+                </g>
+                <line x1="24" y1="72" x2="696" y2="72" stroke="#cbd5e1"></line>
+                <g fill="#dcfce7" opacity="0.6">
+                    <rect x="24" y="80" width="672" height="24"></rect><rect x="24" y="144" width="672" height="24"></rect>
+                </g>
+                <g font-size="11" fill="#334155">
+                    <text x="30" y="98">100BASE-T1 (802.3bw)</text><text x="180" y="98">100 Mbps</text><text x="300" y="98">1 对 UTP</text><text x="470" y="98">≤15 m</text>
+                    <text x="30" y="130">1000BASE-T1 (802.3bp)</text><text x="180" y="130">1 Gbps</text><text x="300" y="130">1 对 UTP</text><text x="470" y="130">≤15 m</text>
+                    <text x="30" y="162">10BASE-T1S (802.3cg)</text><text x="180" y="162">10 Mbps</text><text x="300" y="162">1 对，多点</text><text x="470" y="162">≤25 m</text>
+                    <text x="30" y="194">多千兆 (802.3ch)</text><text x="180" y="194">2.5/5/10 Gbps</text><text x="300" y="194">1 对 (屏蔽)</text><text x="470" y="194">≤15 m</text>
+                </g>
+            </svg>
+            <figcaption>汽车以太网沿用标准以太网 MAC 与上层协议，只替换物理层：用单对非屏蔽/屏蔽双绞线把速率从 100 Mbps 推到 10 Gbps，同时把线束长度限制在十几米以内，以兼顾成本、重量与 EMI。表中距离为典型车载约束下的量级，非精确上限。</figcaption>
+        </figure>
+
+        <h2>20.3 1000BASE-T1 (802.3bp) 与更高速率</h2>
 
         <p>100BASE-T1虽然解决了"有无"的问题，但100 Mbps的带宽对于ADAS的多摄像头融合来说依然不够用。于是，<strong>1000BASE-T1</strong>（IEEE 802.3bp，2016年）来了。</p>
 
@@ -137,7 +164,7 @@
             </tr>
         </table>
 
-        <h3>20.4 DoIP：基于以太网的诊断</h3>
+        <h2>20.4 DoIP：基于以太网的诊断</h2>
 
         <p>汽车以太网不仅用于数据传输，还正在改变汽车诊断的方式。传统汽车诊断使用CAN总线上的UDS（统一诊断服务），通过OBD-II接口连接诊断仪来读取故障码（DTC）、刷写ECU固件等操作。但CAN诊断的速度太慢了——CAN FD最高8 Mbps，实际有效吞吐量更低。刷写一个现代汽车的全部ECU固件（可能高达几个GB），通过CAN FD可能需要几十分钟甚至几个小时。</p>
 
@@ -165,7 +192,7 @@
             <p><strong>有意思的技术细节</strong>：DoIP使用UDP端口13400用于发现服务（车辆发现、路由激活），使用TCP端口13400用于诊断数据传输。当一个DoIP客户端接入网络时，它会先发送一个UDP广播来"发现"车辆，车辆端的DoIP实体回复自己的IP地址和VIN码等信息。建立TCP连接后，客户端发送一个"路由激活"请求来获得诊断权限。这个过程非常像DHCP + 认证的组合。</p>
         </div>
 
-        <h3>20.5 AVB/TSN在车载网络中的应用</h3>
+        <h2>20.5 AVB/TSN在车载网络中的应用</h2>
 
         <p>上一章我们详细讲了TSN，现在来看看它在汽车中的具体应用。汽车中的通信需求可以分为几个不同的类别：</p>
 
@@ -181,7 +208,7 @@
             <p><strong>真实案例</strong>：某国产新能源品牌在2021年推出的旗舰车型中，首次大规模使用了100BASE-T1用于环视摄像头链路。但在整车EMC测试阶段，发现一个严重问题：当100BASE-T1线束与AM/FM收音机天线布线距离过近时，收音机在特定频率上出现了明显的噪声。经过分析，工程师发现是100BASE-T1信号的谐波分量正好落在了FM频段（87.5-108 MHz）的某个频率上。最终解决方案是：更换共模扼流圈的参数以抑制该频段的共模辐射，并调整了线束的布线路径，使其与天线保持至少10 cm的距离。这个案例告诉我们，汽车以太网的物理层设计不只是"能不能通"的问题，还涉及复杂的电磁兼容性工程。</p>
         </div>
 
-        <h3>20.6 汽车以太网的未来</h3>
+        <h2>20.6 汽车以太网的未来</h2>
 
         <p>汽车以太网正在从"新事物"变成"标配"。今天的趋势已经非常清晰：</p>
 
@@ -201,7 +228,7 @@
             <a href="21.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>

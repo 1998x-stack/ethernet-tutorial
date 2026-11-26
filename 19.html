@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第19章 时间敏感网络(TSN)</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +47,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第19章 时间敏感网络(TSN)</h2>
+        <h1>第19章 时间敏感网络(TSN)</h1>
 
         <p>大家好，欢迎回到以太网的世界。在前面几章中，我们聊了PoE供电、故障排查方法论——这些都是今天以太网的重要能力。但你有没有想过一个问题：以太网本质上是一个"尽力交付"（best-effort）的网络，它不保证数据包什么时候能到达。如果你去看一部电影，几百毫秒的延迟你完全感觉不到。但如果你的机器人手臂需要在1毫秒内收到控制指令呢？如果自动驾驶汽车的制动信号迟到2毫秒呢？这时，"尽力交付"四个字就显得非常苍白了。</p>
 
         <p>工业控制、汽车电子、专业音视频——这些场景对网络的要求是<strong>确定性</strong>：数据包必须在规定的时间窗口内到达，不能早，更不能晚。传统以太网显然做不到这一点。于是，<strong>时间敏感网络（Time-Sensitive Networking, TSN）</strong>应运而生。今天，我们就来拆解这个让以太网具备"准时"能力的标准家族。</p>
 
-        <h3>19.1 从AVB到TSN：以太网如何学会"看时间"</h3>
+        <h2>19.1 从AVB到TSN：以太网如何学会"看时间"</h2>
 
         <p>故事要从2000年代中期说起。当时，专业音视频行业遇到一个棘手的问题：用标准以太网传输高清音频和视频流时，播放端和采集端之间的同步是一个大难题。你在会议室里看到视频画面和声音"对不上"，大概率就是网络延迟抖动造成的。为了满足音视频应用对低延迟和同步的需求，IEEE 802.1在2005年成立了<strong>AVB（Audio Video Bridging）</strong>工作组。</p>
 
@@ -58,7 +64,7 @@
 
         <p>这一转型标志着以太网从"尽力交付"向"确定性网络"的跨越。TSN不是一个单一的标准，而是一个包含数十个子标准的"工具箱"——你根据应用场景，从工具箱里挑选需要的"零件"组装出适合你的确定性网络。</p>
 
-        <h3>19.2 802.1AS(gPTP)：全网的统一时钟</h3>
+        <h2>19.2 802.1AS(gPTP)：全网的统一时钟</h2>
 
         <p>确定性网络的前提是什么？所有设备必须对"时间"有一致的理解。如果你的交换机认为现在是10:00:00.000000，而终端设备认为现在是10:00:00.000100，两者差了100微秒，那任何"准时发送"的尝试都是空谈。</p>
 
@@ -90,7 +96,7 @@
             <p><strong>小知识</strong>：gPTP和传统NTP（网络时间协议）的区别非常大。NTP的典型精度是毫秒级，适用于互联网场景；而gPTP通过硬件时间戳（在PHY层打戳，而不是在软件层）实现了纳秒级精度。简单说：NTP看的是软件时间，gPTP看的是硬件时间——这是两者精度差三个数量级的根本原因。</p>
         </div>
 
-        <h3>19.3 802.1Qbv：时间感知整形</h3>
+        <h2>19.3 802.1Qbv：时间感知整形</h2>
 
         <p>有了统一的时钟后，下一个问题是：如何确保关键流量能在准确的时间点被发送出去？这就是<strong>802.1Qbv</strong>——时间感知整形（Time-Aware Shaper, TAS）——要解决的。</p>
 
@@ -111,7 +117,37 @@
 
         <p>在上面的例子中，每个周期开始的前200微秒全部留给最高优先级的实时控制流。这保证了在200微秒的窗口内，控制数据能以确定的、无竞争的延迟到达目的地。窗口结束后，轮到音视频流和尽力而为流量使用信道。这种机制的关键优点是：<strong>高优先级流量完全不受低优先级流量的影响</strong>——因为低优先级流量在时间上被"调度开"了。</p>
 
-        <h3>19.4 802.1Qbu与802.3br：帧抢占</h3>
+        <figure>
+            <svg viewBox="0 0 720 220" role="img" aria-label="802.1Qbv 门控周期内各时间窗口与队列门的开关关系">
+                <title>802.1Qbv 时间感知整形</title>
+                <text x="20" y="24" font-size="13" font-weight="700" fill="#1e293b">Qbv：一个 1ms 周期内的门控时间窗口（GCL 决定何时开哪个门）</text>
+                <g>
+                    <rect x="40" y="44" width="144" height="46" fill="#fca5a5" stroke="#ef4444"></rect>
+                    <rect x="184" y="44" width="216" height="46" fill="#93c5fd" stroke="#3b82f6"></rect>
+                    <rect x="400" y="44" width="216" height="46" fill="#86efac" stroke="#22c55e"></rect>
+                    <rect x="616" y="44" width="72" height="46" fill="#fca5a5" stroke="#ef4444"></rect>
+                </g>
+                <g font-size="10" text-anchor="middle">
+                    <text x="112" y="72" fill="#7f1d1d" font-weight="700">Q7</text>
+                    <text x="292" y="72" fill="#1e3a8a" font-weight="700">Q6</text>
+                    <text x="508" y="72" fill="#14532d" font-weight="700">Q5~Q0</text>
+                    <text x="652" y="72" fill="#7f1d1d" font-weight="700">Q7</text>
+                </g>
+                <line x1="40" y1="90" x2="688" y2="90" stroke="#334155" stroke-width="1"></line>
+                <g font-size="9" fill="#475569" text-anchor="middle">
+                    <text x="40" y="106">0</text><text x="184" y="106">200us</text><text x="400" y="106">500us</text><text x="616" y="106">800us</text><text x="688" y="106">1000us</text>
+                </g>
+                <text x="112" y="132" text-anchor="middle" font-size="10" fill="#7f1d1d">实时控制</text>
+                <text x="292" y="132" text-anchor="middle" font-size="10" fill="#1e3a8a">同步音视频</text>
+                <text x="508" y="132" text-anchor="middle" font-size="10" fill="#14532d">尽力而为</text>
+                <text x="652" y="132" text-anchor="middle" font-size="10" fill="#7f1d1d">控制</text>
+                <text x="40" y="170" font-size="10" fill="#475569">周期结束后循环重放：高优先级流量的最坏延迟被锁在它的窗口内，不再受低优先级流量影响</text>
+                <text x="40" y="192" font-size="10" fill="#b45309">门控表由交换机硬件执行；全网 Qbv 窗口必须对齐到同一个 gPTP 时钟（第 19.2 节）</text>
+            </svg>
+            <figcaption>802.1Qbv 把时间切成固定周期，再用门控调度表（GCL）把每个周期划分为若干时间窗口，只允许对应优先级的队列发送。图中 1ms 周期内前 200us 专供实时控制流，保证其延迟确定且不受尽力而为流量干扰。</figcaption>
+        </figure>
+
+        <h2>19.4 802.1Qbu与802.3br：帧抢占</h2>
 
         <p>Qbv的门控调度虽然强大，但它有一个问题：如果一个低优先级的"大帧"（比如一个1518字节的尽力而为数据包）正在传输的过程中，时钟正好到了高优先级窗口开始时怎么办？按照Qbv的严格调度，交换机应该立即发送高优先级帧——但物理层正在发送那个大帧，总不能把线剪断吧？</p>
 
@@ -123,7 +159,7 @@
             <p><strong>需要注意</strong>：帧抢占要求链路上的两端设备都支持802.3br（MAC Merge Sublayer）。如果其中一端不支持，整个抢占机制就无法正常工作。在部署TSN网络时，设备兼容性是一个必须仔细检查的项目。</p>
         </div>
 
-        <h3>19.5 802.1CB：帧复制与消除</h3>
+        <h2>19.5 802.1CB：帧复制与消除</h2>
 
         <p>工业控制还有一个严苛的要求：<strong>可用性</strong>。如果一条链路断了导致控制指令丢失，后果可能是灾难性的。传统的解决方法是使用冗余链路——比如用两条独立的物理链路同时传输相同的数据。但标准以太网交换机会把重复的数据帧当作环路来对待（生成树协议会阻塞冗余链路），这显然不是我们想要的。</p>
 
@@ -131,7 +167,7 @@
 
         <p>802.1CB可以和其他TSN子标准协同工作：比如同时使用Qbv来保证延迟确定性，又使用CB来保证可靠性。两者结合起来，就能实现"既要准时，又不丢包"的效果。</p>
 
-        <h3>19.6 TSN标准家族一览</h3>
+        <h2>19.6 TSN标准家族一览</h2>
 
         <p>TSN经过十余年的发展，已经形成了一个庞大的标准家族。下面这张表整理了最主要的子标准：</p>
 
@@ -188,7 +224,7 @@
             </tr>
         </table>
 
-        <h3>19.7 工业4.0中的TSN：OPC UA over TSN</h3>
+        <h2>19.7 工业4.0中的TSN：OPC UA over TSN</h2>
 
         <p>聊完标准本身，来看看TSN最有代表性的应用场景——<strong>工业4.0</strong>。在传统工厂中，控制网络使用各种专有现场总线（Profinet、EtherCAT、Powerlink等），每种总线都有自己的协议栈、配置工具和调试方法。IT（信息技术）和OT（运营技术）之间有一道深深的鸿沟——IT工程师不懂现场总线，OT工程师不懂IP网络。</p>
 
@@ -202,7 +238,7 @@
 
         <p>这个案例很好地说明了TSN的价值：它不是让网络"更快"，而是让网络<strong>更可预测</strong>。对于工业场景来说，可预测性比绝对速度更重要。</p>
 
-        <h3>19.8 TSN的挑战与未来</h3>
+        <h2>19.8 TSN的挑战与未来</h2>
 
         <p>TSN虽然强大，但并非没有挑战。首先是<strong>配置复杂度</strong>：TSN有数十个标准，每个标准又有大量可调参数（GCL的时隙划分、每个队列的优先级映射、流预留的带宽等）。手工配置一个TSN网络是一项极其繁琐的工作。802.1Qcc（TSN配置管理）标准试图解决这个问题，引入了集中式网络配置（CNC）和集中式用户配置（CUC）的架构，但整体生态还在成熟过程中。</p>
 
@@ -220,7 +256,7 @@
             <a href="20.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
