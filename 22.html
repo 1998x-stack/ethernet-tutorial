@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第22章 虚拟化与Overlay网络</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,10 +47,10 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第22章 虚拟化与Overlay网络</h2>
+        <h1>第22章 虚拟化与Overlay网络</h1>
 
         <p>大家好，欢迎来到第22章。过去四章我们都在聊物理层的事情——TSN让以太网准时，汽车以太网把以太网塞进车里，SPE把以太网送到一公里外的传感器。现在，让我们完全转换视角，从物理世界跳转到虚拟世界。</p>
 
@@ -52,7 +58,7 @@
 
         <p>问题来了：如果VM从服务器A迁移到了服务器B，而服务器A和服务器B不在同一个二层网络（即它们之间隔着一个三层路由器），VM的MAC地址在路由器那边就"失效"了——路由器不会转发目标MAC为原始VM的帧，因为MAC不在本地广播域中。这个看似简单的"VM迁移后网络不通"的问题，催生了Overlay网络技术的大爆发。</p>
 
-        <h3>22.1 VXLAN：将二层网络延伸到三层之上</h3>
+        <h2>22.1 VXLAN：将二层网络延伸到三层之上</h2>
 
         <p><strong>VXLAN（Virtual eXtensible LAN）</strong>是解决上述问题最成功的Overlay技术。它的核心思想可以用一句话概括：<strong>把以太网帧封装在UDP数据包里，通过三层的IP网络传输</strong>。这样一来，物理网络基础设施可以是一个三层IP网络（路由器+IP转发），而虚拟网络呈现给VM的仍然是一个二层以太网段。</p>
 
@@ -84,7 +90,34 @@
 
         <p>整个过程对VM完全透明——VM以为自己还在同一个二层广播域里，实际上它的数据包已经在三层的IP网络上"跑了个来回"。</p>
 
-        <h3>22.2 EVPN：BGP接管VXLAN的控制面</h3>
+        <figure>
+            <svg viewBox="0 0 720 230" role="img" aria-label="VXLAN 报文封装层次：内层以太网帧外套 UDP/IP 与 VXLAN 头">
+                <title>VXLAN 封装结构</title>
+                <text x="20" y="24" font-size="13" font-weight="700" fill="#1e293b">VXLAN：内层二层帧被包进外层 IP/UDP 隧道（约 50 字节开销）</text>
+                <rect x="40" y="40" width="180" height="34" rx="4" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="130" y="61" text-anchor="middle" font-size="11" fill="#1e40af">外层 MAC（14B）</text>
+                <rect x="40" y="74" width="180" height="34" rx="4" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="130" y="95" text-anchor="middle" font-size="11" fill="#1e40af">外层 IP（20B）</text>
+                <rect x="40" y="108" width="180" height="34" rx="4" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="130" y="129" text-anchor="middle" font-size="11" fill="#1e40af">外层 UDP（8B，端口 4789）</text>
+                <rect x="40" y="142" width="180" height="34" rx="4" fill="#fef3c7" stroke="#f59e0b"></rect>
+                <text x="130" y="163" text-anchor="middle" font-size="11" fill="#92400e">VXLAN 头（8B，VNI 24 位）</text>
+                <rect x="40" y="176" width="180" height="34" rx="4" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="130" y="197" text-anchor="middle" font-size="11" fill="#166534">内层以太网帧（VM→VM）</text>
+                <g stroke="#94a3b8" fill="#94a3b8">
+                    <line x1="235" y1="57" x2="290" y2="110"></line>
+                    <line x1="235" y1="125" x2="290" y2="125"></line>
+                    <line x1="235" y1="193" x2="290" y2="140"></line>
+                </g>
+                <text x="300" y="92" font-size="11" fill="#1e40af">外层头：Underlay 只看这一层，靠目的 IP 把包送到对端 VTEP</text>
+                <text x="300" y="118" font-size="11" fill="#92400e">VNI：区分 1600 万个虚拟网络，比 12 位 VLAN 多得多</text>
+                <text x="300" y="144" font-size="11" fill="#166534">内层帧：VM 看到的是一个普通二层以太网段</text>
+                <text x="40" y="228" font-size="10" fill="#b45309">隧道头开销：14+20+8+8 = 50 字节，注意 MTU 与分片代价</text>
+            </svg>
+            <figcaption>VXLAN 把原始以太网帧整帧封进外层 UDP/IP 隧道：外层 50 字节头让 Underlay 只需按 IP 转发，内层 VNI（24 位）为租户提供约 1600 万个隔离网络。隧道头会消耗 MTU 预算，这是 Overlay 最常见的坑之一。</figcaption>
+        </figure>
+
+        <h2>22.2 EVPN：BGP接管VXLAN的控制面</h2>
 
         <p>VXLAN解决了数据平面的封装问题，但它自身没有定义控制面——也就是VTEP如何知道"某个MAC地址对应哪个远端VTEP"。早期VXLAN依赖泛洪和学习（flood-and-learn）来发现MAC-to-VTEP的映射关系，类似传统以太网交换机的MAC学习方式。但这种方式在多播受限的网络中效果很差（因为需要组播来传播广播帧），而且在大规模数据中心中收敛速度慢。</p>
 
@@ -151,7 +184,7 @@
             8. 此后VM1→VM2的数据包直接通过VXLAN隧道封装发送，不再需要泛洪</p>
         </div>
 
-        <h3>22.3 NVGRE与STT：曾经的竞争者</h3>
+        <h2>22.3 NVGRE与STT：曾经的竞争者</h2>
 
         <p>VXLAN并不是Overlay网络领域唯一的方案。在2012-2014年期间，还有几个竞争者活跃过：</p>
 
@@ -215,7 +248,7 @@
             </tr>
         </table>
 
-        <h3>22.4 一个致命的MTU问题</h3>
+        <h2>22.4 一个致命的MTU问题</h2>
 
         <p>讲完了VXLAN和EVPN这些"高大上"的技术，我想讲一个非常实际的问题——MTU。因为这个问题如果不处理好，整个VXLAN网络都可能"看起来通但实际上慢得离奇"。</p>
 
@@ -231,7 +264,7 @@
 
         <p>这个故事给我们的教训是：在部署任何Overlay网络之前，<strong>先把underlay网络的MTU配好</strong>。通常建议将物理网络MTU设为9000（巨帧，jumbo frame），这样即使加上多层封装（VXLAN + IPsec等）也绰绰有余。</p>
 
-        <h3>22.5 Overlay网络的未来</h3>
+        <h2>22.5 Overlay网络的未来</h2>
 
         <p>Overlay网络技术经过十年的发展，已经成为现代数据中心网络的"标配"。VXLAN + EVPN的架构方案被几乎所有主流网络设备厂商支持，并且和SDN控制器深度集成。展望未来，有以下几个趋势值得关注：</p>
 
@@ -249,7 +282,7 @@
             <a href="23.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>

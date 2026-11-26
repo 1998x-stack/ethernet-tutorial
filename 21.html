@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第21章 单对以太网(SPE)</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +47,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第21章 单对以太网(SPE)</h2>
+        <h1>第21章 单对以太网(SPE)</h1>
 
         <p>大家好，欢迎来到第21章。上一章我们聊了汽车以太网——在汽车里用单对非屏蔽双绞线跑以太网。你可能在想：既然汽车可以，那工业现场、楼宇自控、甚至偏远传感器为什么不能用？答案是：当然可以，而且这正是<strong>单对以太网（Single Pair Ethernet, SPE）</strong>正在做的事情。</p>
 
         <p>SPE可以说是近年来以太网物理层最激动人心的创新之一。它把以太网从"四对线"的束缚中解放出来，让一根双绞线同时承载数据和电力，还能传输到1公里之外。这一下子打开了无数新场景的大门——从油田的压力传感器到智能楼宇的温度控制器，从矿山的安全监测到农业的土壤湿度监测。本章我们就来深入探索SPE的方方面面。</p>
 
-        <h3>21.1 什么是SPE</h3>
+        <h2>21.1 什么是SPE</h2>
 
         <p>传统以太网从10BASE-T开始就使用4对双绞线（或者说至少2对：100BASE-TX使用2对，1000BASE-T使用4对）。4对线的连接器（RJ45）体积不算小，线缆也比较粗重。在数据中心和办公环境中，这不是大问题。但在工业现场、汽车、传感器网络中，情况就完全不同了：</p>
 
@@ -63,7 +69,7 @@
 
         <p><strong>单对以太网（SPE）</strong>顾名思义，只用一对双绞线传输数据。它最革命性的特点有两个：第一，只用一根线传数据和供电（PoDL，数据线供电）；第二，10BASE-T1L可以传输长达1公里。这让它成为替代传统RS-485、RS-232、HART等串行总线的理想选择——用一套统一的IP网络替代这些各不相同的专有总线。</p>
 
-        <h3>21.2 10BASE-T1L (802.3cg)：远距离SPE</h3>
+        <h2>21.2 10BASE-T1L (802.3cg)：远距离SPE</h2>
 
         <p><strong>10BASE-T1L</strong>（IEEE 802.3cg，2019年发布）是SPE家族中第一个获得广泛关注的标准。"1L"中的L代表Long Reach——长距离。它的技术参数如下：</p>
 
@@ -96,7 +102,31 @@
             <p><strong>技术细节</strong>：10BASE-T1L使用了一种聪明的编码策略来平衡带宽和距离的关系。它采用4B3B编码（4位数据→3位符号）+ PAM3调制，将信号带宽控制在较低水平，从而获得更长的传输距离。实际上，10BASE-T1L的信号在1公里处的衰减可能超过20 dB，因此PHY芯片需要具备很强的均衡能力来恢复信号。</p>
         </div>
 
-        <h3>21.3 100BASE-T1L：中速SPE</h3>
+        <figure>
+            <svg viewBox="0 0 720 210" role="img" aria-label="10BASE-T1L 单对以太网长距离链路与可选 PoDL 供电示意图">
+                <title>10BASE-T1L 单对以太网链路</title>
+                <text x="20" y="24" font-size="13" font-weight="700" fill="#1e293b">10BASE-T1L：一根单对双绞线跑 10 Mbps，可达约 1 公里</text>
+                <rect x="30" y="52" width="150" height="56" rx="8" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="105" y="76" text-anchor="middle" font-size="11" fill="#1e40af">控制室</text>
+                <text x="105" y="92" text-anchor="middle" font-size="10" fill="#475569">SPE 交换机 (10BASE-T1L)</text>
+                <rect x="250" y="52" width="190" height="56" rx="8" fill="#e0e7ff" stroke="#818cf8"></rect>
+                <text x="345" y="76" text-anchor="middle" font-size="11" fill="#3730a3">单对双绞线</text>
+                <text x="345" y="92" text-anchor="middle" font-size="10" fill="#475569">最长约 1 km（+ 可选 PoDL 供电）</text>
+                <rect x="510" y="52" width="180" height="56" rx="8" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="600" y="76" text-anchor="middle" font-size="11" fill="#166534">现场仪表</text>
+                <text x="600" y="92" text-anchor="middle" font-size="10" fill="#475569">温度 / 压力 / 流量传感器</text>
+                <g stroke="#64748b" stroke-width="2">
+                    <line x1="180" y1="80" x2="248" y2="80"></line><line x1="440" y1="80" x2="508" y2="80"></line>
+                </g>
+                <rect x="30" y="132" width="230" height="44" rx="8" fill="#f8fafc" stroke="#cbd5e1"></rect>
+                <text x="145" y="159" text-anchor="middle" font-size="10" fill="#475569">RJ45 传统以太网 → SPE 介质转换器</text>
+                <text x="290" y="159" font-size="10" fill="#b45309">替代旧有 RS-485 / HART（1.2 kbps~百 kbps）</text>
+                <text x="30" y="198" font-size="10" fill="#64748b">同时承载数据与可选供电，无需额外电源线，适合过程自动化现场</text>
+            </svg>
+            <figcaption>10BASE-T1L 把 10 Mbps 以太网送到约 1 公里外的现场仪表，取代 HART（1.2 kbps）或 RS-485 等旧现场总线；PoDL 可在同一对线上叠加供电，省去独立的电源走线。</figcaption>
+        </figure>
+
+        <h2>21.3 100BASE-T1L：中速SPE</h2>
 
         <p>除了10BASE-T1L之外，IEEE 802.3dg工作组正在标准化<strong>100BASE-T1L</strong>——在1公里距离上提供100 Mbps的速率。这比10BASE-T1L又进了一大步，其设计挑战也更大：更高的速率意味着更宽的信号带宽，在长距离传输中信号衰减更严重。</p>
 
@@ -104,7 +134,7 @@
 
         <p>虽然100BASE-T1L的标准尚未最终定稿（截至2026年），但它已经引起了工业界的高度关注，特别是那些需要"同时传输多个视频流"或"汇聚多个传感器数据流"的工业场景。</p>
 
-        <h3>21.4 PoDL：数据线供电</h3>
+        <h2>21.4 PoDL：数据线供电</h2>
 
         <p><strong>PoDL（Power over Data Line）</strong>是SPE生态系统中的关键组成部分。它和传统的PoE（Power over Ethernet）有相似的目标——通过数据线缆供电——但它们的实现方式和应用场景有很大区别。</p>
 
@@ -150,7 +180,7 @@
 
         <p>PoDL把功率划分为不同的等级（Class），从Class 0（约0.5W）到Class 10（约50W），以适应不同功耗的设备。一个简单的温度传感器只需要Class 0（0.5W足够），而一个带加热功能的流量计可能需要Class 6以上。供电端（Power Sourcing Equipment, PSE）通过检测受电设备（Powered Device, PD）的签名电阻来判断应该提供多大的功率，这个过程和PoE非常相似。</p>
 
-        <h3>21.5 SPE的典型应用场景</h3>
+        <h2>21.5 SPE的典型应用场景</h2>
 
         <p>SPE的应用版图非常广阔，我们来逐一看看：</p>
 
@@ -168,7 +198,7 @@
 
         <p>这个案例很有代表性——SPE的核心价值不仅仅是"技术升级"，更是将IT的运维范式引入了OT领域。当温度传感器拥有自己的IP地址时，它的管理方式就从一个"现场仪表"变成了一个"网络设备"。</p>
 
-        <h3>21.6 SPE的生态与连接器</h3>
+        <h2>21.6 SPE的生态与连接器</h2>
 
         <p>SPE的推广还需要解决一个"最后一厘米"的问题：连接器。RJ45是为4对线设计的，体积太大，不适合SPE。工业领域需要一个小型化、高可靠性、支持PoDL的单对线连接器标准。</p>
 
@@ -190,7 +220,7 @@
             <a href="22.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
