@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第25章 软件定义网络与以太网</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +47,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第25章 软件定义网络与以太网</h2>
+        <h1>第25章 软件定义网络与以太网</h1>
 
         <p>大家好，欢迎来到第25章。如果你从事网络行业超过十年，你一定记得2010年前后那种"谈SDN色变"的氛围——很多人说SDN会"杀死"传统网络工程师，就像当初以太网"杀死"了Token Ring一样。十几年过去了，传统网络工程师不但没被"杀死"，反而是SDN本身从一个学术概念逐步落地成了云数据中心网络的事实标准。</p>
 
         <p><strong>软件定义网络（SDN，Software-Defined Networking）</strong>到底在定义什么？用一句话说：它把网络设备的<strong>控制面（Control Plane）</strong>和<strong>转发面（Data Plane）</strong>拆开了。传统交换机上，路由决策、MAC学习、STP计算等控制逻辑和包转发硬件是紧密耦合的——每一台交换机都是"独立的决策者"。而在SDN架构中，控制面集中到一个逻辑上的"大脑"（SDN控制器），转发面只负责执行"大脑"下发的指令（流表）。</p>
 
-        <h3>25.1 SDN的基本思想</h3>
+        <h2>25.1 SDN的基本思想</h2>
 
         <p>要理解SDN为什么重要，先得理解传统网络为什么"僵化"。传统交换机/路由器的工作方式是这样的：每台设备独立运行各种分布式协议——OSPF计算路由、STP计算无环拓扑、VLAN Trunking协议协商VLAN同步……每个协议都是设备厂商自己实现的，兼容性全靠遵循RFC。当你要改变网络行为时（比如"把所有去往某个IP的流量先经过防火墙做安全检测"），你需要登录到每一台相关的设备上，修改配置——如果网络里有几百台设备，这就是一场噩梦。更糟糕的是，不同厂商的设备命令完全不同：Cisco用IOS命令集，华为用VRP命令集，Juniper用JunOS命令集。对于一个跨厂商环境的运维团队来说，这意味着一人学多套"方言"。</p>
 
@@ -64,7 +70,7 @@
             <li><strong>快速创新</strong>：新的网络功能只需要在控制器上开发软件，不需要等待交换机硬件厂商更新固件。网络功能的迭代周期从"年"缩短到了"周"。</li>
         </ul>
 
-        <h3>25.2 OpenFlow协议</h3>
+        <h2>25.2 OpenFlow协议</h2>
 
         <p>如果说SDN是一种架构思想，那么<strong>OpenFlow</strong>就是让这个架构落地的第一个标准化协议。它由Stanford大学的Nick McKeown团队在2008年提出，后来由开放网络基金会（ONF）负责标准化。</p>
 
@@ -86,7 +92,31 @@
             <p><strong>OpenFlow vs. 传统交换</strong>：如果你熟悉传统的以太网交换，可以这样类比。传统交换机的MAC地址表 = 一张自动学习的流表（但只有目的MAC一个匹配维度）。而OpenFlow的流表是多维的——你可以说"所有从端口1进入的、VLAN ID=100的、去往10.0.0.0/8的TCP 80端口流量，转发到端口5"。这在传统交换机上需要ACL + VLAN + 路由策略的组合配置才能实现，而且配置方式每个厂商都不一样。在OpenFlow中，这就是一条流表项的事。</p>
         </div>
 
-        <h3>25.3 SDN控制器</h3>
+        <figure>
+            <svg viewBox="0 0 720 220" role="img" aria-label="SDN 三层架构：应用层、控制层与数据层的南北向接口示意图">
+                <title>SDN 分层架构与南北向接口</title>
+                <text x="20" y="24" font-size="13" font-weight="700" fill="#1e293b">SDN：控制平面集中化，数据平面保持简单</text>
+                <rect x="120" y="40" width="480" height="42" rx="8" fill="#ede9fe" stroke="#8b5cf6"></rect>
+                <text x="360" y="66" text-anchor="middle" font-size="11" fill="#5b21b6">应用层：路由 / 防火墙 / 负载均衡等网络应用</text>
+                <rect x="120" y="104" width="480" height="42" rx="8" fill="#dbeafe" stroke="#60a5fa"></rect>
+                <text x="360" y="130" text-anchor="middle" font-size="11" fill="#1e40af">控制层：SDN 控制器（集中掌握全局拓扑与策略）</text>
+                <rect x="120" y="168" width="480" height="42" rx="8" fill="#dcfce7" stroke="#4ade80"></rect>
+                <text x="360" y="194" text-anchor="middle" font-size="11" fill="#166534">数据层：交换机只按流表转发（OpenFlow / P4）</text>
+                <g stroke="#7c3aed" stroke-width="2" fill="#7c3aed">
+                    <line x1="300" y1="82" x2="300" y2="102"></line><path d="M300,102 L295,92 L305,92 z"></path>
+                    <line x1="420" y1="102" x2="420" y2="84"></line><path d="M420,84 L415,94 L425,94 z"></path>
+                </g>
+                <text x="440" y="96" font-size="10" fill="#5b21b6">北向接口（REST / 编程 API）</text>
+                <g stroke="#0369a1" stroke-width="2" fill="#0369a1">
+                    <line x1="300" y1="146" x2="300" y2="166"></line><path d="M300,166 L295,156 L305,156 z"></path>
+                    <line x1="420" y1="166" x2="420" y2="148"></line><path d="M420,148 L415,158 L425,158 z"></path>
+                </g>
+                <text x="440" y="160" font-size="10" fill="#075985">南向接口（OpenFlow / NETCONF）</text>
+            </svg>
+            <figcaption>SDN 把“怎么转发”的决定权从分散的交换机上移到集中的控制器：应用层通过北向接口下发意图，控制器把意图翻译成流表，通过南向接口（如 OpenFlow）安装到只负责高速转发的数据层交换机。</figcaption>
+        </figure>
+
+        <h2>25.3 SDN控制器</h2>
 
         <p>控制器是SDN架构的"大脑"。市场上有多个开源和商业控制器可供选择：</p>
 
@@ -96,7 +126,7 @@
 
         <p><strong>Ryu</strong>：用Python开发的轻量级SDN控制器。Ryu的代码非常精简（核心只有几千行代码），API设计优雅，适合快速原型开发和学术研究。你只需要几十行Python代码就能写一个简单的SDN应用。很多高校的网络课程实验都基于Ryu。它的缺点是性能和可靠性不如ODL/ONOS，不适合生产环境。</p>
 
-        <h3>25.4 P4：协议无关的可编程数据平面</h3>
+        <h2>25.4 P4：协议无关的可编程数据平面</h2>
 
         <p>OpenFlow有一个根本性的局限：它只能操作<strong>已知的协议字段</strong>——12元组是固定的，如果出现新的协议头（比如VXLAN的VNI、NSH的Service Path ID），OpenFlow就需要更新协议规范才能支持。这限制了网络创新的速度。</p>
 
@@ -121,7 +151,7 @@
 
         <p>P4的强大之处在于它是<strong>目标无关的</strong>——你写一份P4代码，可以编译到不同的硬件平台运行（包括Barefoot Tofino可编程交换芯片、FPGA、软件交换机BMv2）。这意味着网络功能可以真正做到"一次编写，到处运行"。</p>
 
-        <h3>25.5 SONiC：开源的云网络操作系统</h3>
+        <h2>25.5 SONiC：开源的云网络操作系统</h2>
 
         <p>如果说OpenFlow和P4是SDN的"南向接口革命"，那么<strong>SONiC（Software for Open Networking in the Cloud）</strong>就是"网络操作系统革命"。SONiC由微软在2016年开源，现在由Linux Foundation管理，已经部署在全球数百家企业的数据中心里。</p>
 
@@ -200,7 +230,7 @@
             </tr>
         </table>
 
-        <h3>25.6 一个真实的"踩坑"故事：用P4实现INT</h3>
+        <h2>25.6 一个真实的"踩坑"故事：用P4实现INT</h2>
 
         <p>几年前，我参与了一个云厂商的网络流量可视化项目。传统的网络监控依赖SNMP轮询——每隔30秒去读一次交换机的端口计数器。但SNMP的问题是：它只能告诉你"过去30秒里这个端口发送了多少字节"，却不能告诉你"每个数据包经历了哪些路径、在哪个队列里等了多久"。对于需要微秒级拥塞检测的场景（比如RDMA流量），SNMP的粒度和时效性完全不够。</p>
 
@@ -246,7 +276,7 @@ control IngressPipe {
             <a href="26.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>

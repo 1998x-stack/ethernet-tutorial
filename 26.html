@@ -5,11 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
     <title>第26章 超以太网：UEC与AI网络</title>
     <link rel="stylesheet" href="theme.css">
+    <style>
+        pre { overflow-x: auto; max-width: 100%; }
+        img, svg { max-width: 100%; height: auto; }
+        table { width: 100%; max-width: 100%; border-collapse: collapse; }
+        th, td { word-break: break-word; }
+    </style>
 </head>
 <body>
 <div class="double-border">
 <div class="container">
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="课程目录">
         <h3>🌐 课程目录</h3>
         <ul class="chapter-list">
             <li><a href="01.html">第1章 以太网的起源与精神</a></li>
@@ -41,16 +47,16 @@
             <li><a href="27.html">第27章 800G/1.6T与400G/通道技术</a></li>
             <li><a href="28.html">第28章 综合项目：企业网络设计</a></li>
         </ul>
-    </div>
-    <div class="main-content">
+    </nav>
+    <main class="main-content">
 
-        <h2>第26章 超以太网：UEC与AI网络</h2>
+        <h1>第26章 超以太网：UEC与AI网络</h1>
 
         <p>大家好。在前面的章节中，我们依次学习了传统以太网、数据中心以太网、SDN等技术。有的同学可能会问：以太网发展到今天，难道还有什么是值得"从头来过"的吗？答案是：有。而且这一次的重塑，恰恰是因为一个我们每个人都在间接使用的东西——<strong>AI大模型</strong>。</p>
 
         <p>你可能已经听说过，训练一个GPT-4级别的大模型需要成千上万张GPU协同工作几千个小时。这些GPU之间需要频繁交换参数和梯度数据——不是几兆字节，而是几百GB甚至TB级别的数据。这要求网络的<strong>带宽</strong>极高、<strong>延迟</strong>极低、<strong>丢包率</strong>无限趋近于零。用一句话概括：AI训练对网络的要求，是传统以太网从未面对过的极限挑战。</p>
 
-        <h3>26.1 AI时代的网络"不可能三角"</h3>
+        <h2>26.1 AI时代的网络"不可能三角"</h2>
 
         <p>AI分布式训练的网络流量模式和传统数据中心有本质区别。传统的Web服务请求是"南北向"的——客户端发请求，服务器回响应，流量模式像潮水一样有涨有落。而AI训练流量主要是"东西向"的——GPU卡之间不停地进行<strong>All-Reduce</strong>操作，把每张卡计算出的梯度汇总并分发。这个过程中，任何一个包的丢失都会导致整个同步操作延迟，因为所有卡必须一起等待才能进入下一轮计算。</p>
 
@@ -70,7 +76,7 @@
 
         <p>这个案例暴露了RoCEv2在AI场景的核心问题。RoCEv2本质上是在标准以太网上强行"嫁接"RDMA能力，它依赖于PFC来实现无损传输。但PFC本身是一个粗糙的"逐跳反压"机制——一旦某台交换机缓存满了，它就向上游发暂停帧，上游缓存满了就继续向上游发，最终形成"树形反压"，整个网络的所有流量都被阻塞。这好比你在高速公路上遇到堵车，结果不是大家慢慢挪，而是整条公路的所有入口全部被交警强制关闭——一个出口堵了，整个路网瘫痪。</p>
 
-        <h3>26.2 RoCEv2的三宗罪</h3>
+        <h2>26.2 RoCEv2的三宗罪</h2>
 
         <p>除了PFC死锁，RoCEv2在AI场景还有另外两个致命问题。</p>
 
@@ -82,7 +88,7 @@
 
         <p>这三宗罪叠加的后果是：即便是精心调优的RoCEv2网络，在千卡以上的AI集群中，有效带宽利用率通常只有<strong>40%-60%</strong>。换句话说，你买了100G的网卡，实际只能用40G-60G。</p>
 
-        <h3>26.3 Ultra Ethernet Consortium的诞生</h3>
+        <h2>26.3 Ultra Ethernet Consortium的诞生</h2>
 
         <p>面对AI训练的"不可能三角"，业界意识到：小修小补已经不够了。RoCEv2是2014年前后的技术，那时候没人想到GPU集群会发展到十万卡规模。我们需要一种<strong>从零设计</strong>的、专门为AI和高性能计算优化的以太网方案。</p>
 
@@ -94,7 +100,7 @@
             <p><strong>关键认知</strong>：UEC不是要替代以太网，而是要把以太网改造成一个更好的"AI网络底座"。它保留了以太网的所有优点——开放标准、生态系统成熟、成本优势——同时解决了RoCEv2在AI场景的固有缺陷。这也是为什么它叫"超以太网"而非"新以太网"——它超越了传统以太网的能力边界，但依然是以太网家族的一员。</p>
         </div>
 
-        <h3>26.4 UEC的核心创新</h3>
+        <h2>26.4 UEC的核心创新</h2>
 
         <h4>26.4.1 LLR：链路层重传</h4>
 
@@ -150,7 +156,36 @@
 
         <p>选择性重传 + LLR的组合，使得UEC在出现丢包时，只需要在相邻交换机之间重传几个Cell，延迟增加不超过几微秒。而传统RoCEv2在同样场景下可能触发Go-Back-N重传全部数据，延迟暴增几百毫秒。两者的差距在AI训练场景中是天壤之别。</p>
 
-        <h3>26.5 UEC vs RoCEv2 vs InfiniBand</h3>
+        <figure>
+            <svg viewBox="0 0 720 250" role="img" aria-label="ECMP 按流哈希与 UEC 报文喷洒在等价路径上负载分布的对比">
+                <title>ECMP 按流哈希 vs 报文喷洒</title>
+                <text x="20" y="22" font-size="13" font-weight="700" fill="#1e293b">报文喷洒：把“按流选路”换成“按包（信元）选路”</text>
+                <text x="30" y="48" font-size="11" font-weight="700" fill="#991b1b">传统 ECMP（按流哈希）</text>
+                <rect x="30" y="56" width="300" height="30" rx="5" fill="#fee2e2" stroke="#f87171"></rect>
+                <text x="180" y="75" text-anchor="middle" font-size="10" fill="#7f1d1d">流 A 全部 4 个包 → 路径 1</text>
+                <rect x="30" y="90" width="300" height="30" rx="5" fill="#fef9c3" stroke="#facc15"></rect>
+                <text x="180" y="109" text-anchor="middle" font-size="10" fill="#854d0e">流 B、流 C 哈希碰撞 → 路径 2</text>
+                <rect x="30" y="124" width="300" height="30" rx="5" fill="#f1f5f9" stroke="#cbd5e1"></rect>
+                <text x="180" y="143" text-anchor="middle" font-size="10" fill="#475569">路径 3、路径 4 空闲</text>
+                <text x="30" y="176" font-size="10" fill="#b91c1c">瓶颈在单条链路上，其余链路带宽浪费</text>
+                <line x1="350" y1="40" x2="350" y2="230" stroke="#e2e8f0"></line>
+                <text x="380" y="48" font-size="11" font-weight="700" fill="#166534">UEC 报文喷洒（按信元选路）</text>
+                <g>
+                    <rect x="380" y="56" width="310" height="30" rx="5" fill="#dcfce7" stroke="#4ade80"></rect>
+                    <text x="535" y="75" text-anchor="middle" font-size="10" fill="#14532d">路径 1 收到 c1、c5、c9…</text>
+                    <rect x="380" y="90" width="310" height="30" rx="5" fill="#dcfce7" stroke="#4ade80"></rect>
+                    <text x="535" y="109" text-anchor="middle" font-size="10" fill="#14532d">路径 2 收到 c2、c6、c10…</text>
+                    <rect x="380" y="124" width="310" height="30" rx="5" fill="#dcfce7" stroke="#4ade80"></rect>
+                    <text x="535" y="143" text-anchor="middle" font-size="10" fill="#14532d">路径 3 / 4 同样被均匀填满</text>
+                </g>
+                <text x="380" y="176" font-size="10" fill="#166534">每个信元独立选路，接收端重排；链路利用率接近 100%</text>
+                <text x="30" y="214" font-size="10" fill="#475569">代价：接收端需要重排序缓存，且乱序对单流延迟提出新要求</text>
+                <text x="30" y="234" font-size="10" fill="#b45309">“接近 100%”为教学示意，实际取决于控制面利用率与拓扑规模</text>
+            </svg>
+            <figcaption>ECMP 按五元组哈希把整条流固定到一条路径，哈希碰撞时部分链路闲置；UEC 的信元级报文喷洒让每个信元独立选路、接收端重排，从而把每条等价路径都填满。代价是接收端需要重排序缓存。</figcaption>
+        </figure>
+
+        <h2>26.5 UEC vs RoCEv2 vs InfiniBand</h2>
 
         <p>说到AI训练的互联技术，不能不提 InfiniBand（IB）。IB在HPC和AI领域一直是RoCEv2的强劲对手。UEC 1.0的出现，让这场对决更加激烈。我们来看看三者的关键指标对比：</p>
 
@@ -223,7 +258,7 @@
             <p><strong>有意思的观察</strong>：InfiniBand原本是一种独立的技术标准，但在2020年NVIDIA收购Mellanox后，InfiniBand实际上变成了NVIDIA的"准专有"技术——虽然IBTA（InfiniBand Trade Association）仍然存在，但绝大多数InfiniBand设备只来自NVIDIA。相比之下，UEC从一开始就强调多厂商协作和开放标准，这让人想起当年DIX联盟将以太网开放化的历史。历史不会简单重复，但确实有惊人的相似。</p>
         </div>
 
-        <h3>26.6 中国GSE方案</h3>
+        <h2>26.6 中国GSE方案</h2>
 
         <p>在UEC之外，中国科技界也在积极探索面向AI的以太网增强方案。其中最值得关注的是<strong>GSE（Global Scheduling Ethernet）</strong>——全局调度以太网。GSE由中国计算机学会（CCF）和多家国内企业共同推进，核心思路是在UEC的基础上增加一个<strong>全局调度层</strong>。</p>
 
@@ -231,7 +266,7 @@
 
         <p>目前GSE还处于标准制定阶段，但已经引起了业界的广泛关注。它和UEC的关系更像是互补而非竞争——UEC解决下层链路问题，GSE解决上层调度问题。未来GSE可能作为UEC的上层扩展被集成到超以太网规范中。</p>
 
-        <h3>26.7 超以太网的未来之路</h3>
+        <h2>26.7 超以太网的未来之路</h2>
 
         <p>UEC 1.0在2025年6月的发布标志着超以太网从"纸上谈兵"进入了"真实部署"阶段。但挑战依然存在：</p>
 
@@ -251,7 +286,7 @@
             <a href="27.html">下一章 →</a>
         </div>
 
-    </div>
+    </main>
 </div>
 </div>
 </body>
