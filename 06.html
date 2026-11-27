@@ -8,6 +8,9 @@
     <style>
         pre { overflow-x: auto; max-width: 100%; }
         img, svg { max-width: 100%; height: auto; }
+        .backoff-widget { background: #f8faff; border: 1px solid #c7d2fe; border-radius: 14px; padding: 14px 18px; margin: 16px 0; }
+        .backoff-widget button { font: inherit; padding: 7px 16px; border-radius: 10px; border: 1px solid #6366f1; background: #eef2ff; color: #3730a3; cursor: pointer; margin-right: 8px; }
+        .backoff-widget button:focus-visible, .backoff-widget button:focus { outline: 3px solid #f59e0b; outline-offset: 2px; }
     </style>
 </head>
 <body>
@@ -234,6 +237,19 @@
             </tr>
         </table>
 
+        <h3>6.4.1 动手模拟：一次冲突后的退避</h3>
+
+        <p>下面的小工具用确定性的“伪随机”演示截断二进制指数退避：每点一次“发生一次碰撞”，退避次数 <code>n</code> 加一，竞争窗口增长为 <code>0 ~ 2<sup>n</sup>-1</code> 个时隙，并给出一个示意的等待时间（1 个时隙 = 512 位时 = 51.2 µs，对应 10 Mbps）。窗口与上限遵循 IEEE 802.3 的 CSMA/CD 定义；具体选中的时隙 <code>k</code> 与由此算出的等待时间属于**教学示意**，不是真实抓包值。</p>
+
+        <div class="backoff-widget">
+            <p>当前退避次数 n = <strong id="bo-n">1</strong>；竞争窗口 = <strong id="bo-win">0 ~ 1</strong> 个时隙；本次选中时隙 k = <strong id="bo-k">0</strong>；等待时间 ≈ <strong id="bo-t">0.0 µs</strong>。</p>
+            <p>
+                <button type="button" id="bo-step">发生一次碰撞</button>
+                <button type="button" id="bo-reset">重置</button>
+            </p>
+            <p aria-live="polite" id="bo-log">尚未发生碰撞，n = 1，窗口 0 ~ 1。</p>
+        </div>
+
         <h2>6.5 一个真实的"碰撞风暴"故事</h2>
 
         <p>前面讲的都是理论。下面分享一个我亲身经历的真实案例——一个因为CSMA/CD碰撞率过高导致生产系统瘫痪的故事。</p>
@@ -263,5 +279,27 @@
     </main>
 </div>
 </div>
+<script>
+(function () {
+    var n = 1, k = 0, runs = 0;
+    var $ = function (id) { return document.getElementById(id); };
+    function pick(i) { var x = (i * 2654435761) >>> 0; return x % Math.pow(2, n); }
+    function render(msg) {
+        $('bo-n').textContent = n;
+        $('bo-win').textContent = '0 ~ ' + (Math.pow(2, n) - 1);
+        $('bo-k').textContent = k;
+        $('bo-t').textContent = (k * 51.2).toFixed(1) + ' µs';
+        $('bo-log').textContent = '第 ' + runs + ' 次模拟：' + msg;
+    }
+    $('bo-step').addEventListener('click', function () {
+        runs++;
+        if (runs > 1) { n = Math.min(n + 1, 10); }
+        k = pick(runs + n * 7);
+        render('n = ' + n + '，窗口 0 ~ ' + (Math.pow(2, n) - 1) + '，选中时隙 ' + k + '，等待约 ' + (k * 51.2).toFixed(1) + ' µs。');
+    });
+    $('bo-reset').addEventListener('click', function () { n = 1; k = 0; runs = 0; render('已重置：n = 1，窗口 0 ~ 1。'); });
+    render('n = 1，窗口 0 ~ 1。');
+})();
+</script>
 </body>
 </html>
