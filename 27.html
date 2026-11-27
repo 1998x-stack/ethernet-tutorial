@@ -10,6 +10,11 @@
         img, svg { max-width: 100%; height: auto; }
         table { width: 100%; max-width: 100%; border-collapse: collapse; }
         th, td { word-break: break-word; }
+        .rate-widget { background: #f8faff; border: 1px solid #c7d2fe; border-radius: 14px; padding: 14px 18px; margin: 16px 0; }
+        .rate-widget button { font: inherit; padding: 7px 16px; border-radius: 10px; border: 1px solid #6366f1; background: #eef2ff; color: #3730a3; cursor: pointer; margin-right: 8px; }
+        .rate-widget button[aria-pressed="true"] { background: #6366f1; color: #fff; }
+        .rate-widget button:focus-visible, .rate-widget button:focus { outline: 3px solid #f59e0b; outline-offset: 2px; }
+        .rate-widget input { font: inherit; width: 7em; padding: 5px 8px; border: 1px solid #94a3b8; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -176,6 +181,22 @@
             <figcaption>PAM4 用四个电平在同样符号率下把速率翻倍，但相邻电平间距只有 NRZ 的三分之一，噪声容限随之下降，系统需要约 9.5 dB 的额外 SNR，这也是 PAM4 必须依赖 DSP 均衡的原因。（眼高比例与 9.5 dB 为按教科书推导的教学示意值）</figcaption>
         </figure>
 
+        <h3>27.3.1 动手：算算每通道速率与所需通道数</h3>
+
+        <p>选择调制方式并调整符号率（GBd），估算单通道比特率和凑够 800G / 1.6T 所需的通道数。公式：单通道速率 = 符号率 × log₂(电平数)；NRZ 取 1 bit/符号、PAM4 取 2、PAM6 取 log₂6 ≈ 2.585。结果为按公式推导的<strong>教学示意</strong>，未考虑编码开销。</p>
+
+        <div class="rate-widget">
+            <p>
+                <button type="button" id="rate-nrz" aria-pressed="false">NRZ</button>
+                <button type="button" id="rate-pam4" aria-pressed="true">PAM4</button>
+                <button type="button" id="rate-pam6" aria-pressed="false">PAM6</button>
+            </p>
+            <p><label for="rate-baud">符号率 (GBd)：</label>
+                <input type="number" id="rate-baud" min="1" max="250" value="112" inputmode="numeric"></p>
+            <p>单通道速率 ≈ <strong id="rate-lane">224.0</strong> Gb/s；800G 需 <strong id="rate-l800">4</strong> 通道；1.6T 需 <strong id="rate-l1600">8</strong> 通道。</p>
+            <p aria-live="polite" id="rate-note">PAM4：每符号 2 bit，符号率 112 GBd → 单通道 224.0 Gb/s。</p>
+        </div>
+
         <h2>27.4 802.3dj：200G/通道的新标准</h2>
 
         <p>2023年，IEEE 802.3启动了<strong>802.3dj Task Force</strong>，目标是定义200 Gb/s每通道的物理层规范。802.3dj将成为未来5-10年以太网物理层最重要的标准，覆盖以下速率：</p>
@@ -275,5 +296,31 @@
     </main>
 </div>
 </div>
+<script>
+(function () {
+    var bits = 2, name = 'PAM4', blabel = '2';
+    var $ = function (id) { return document.getElementById(id); };
+    function calc() {
+        var baud = Math.min(250, Math.max(1, parseFloat($('rate-baud').value) || 0));
+        var per = baud * bits;
+        $('rate-lane').textContent = per.toFixed(1);
+        $('rate-l800').textContent = Math.ceil(800 / per);
+        $('rate-l1600').textContent = Math.ceil(1600 / per);
+        $('rate-note').textContent = name + '：每符号 ' + blabel + ' bit，符号率 ' + baud + ' GBd → 单通道 ' + per.toFixed(1) + ' Gb/s。';
+    }
+    function set(mode, n, b, lbl) {
+        bits = b; name = n; blabel = lbl;
+        $('rate-nrz').setAttribute('aria-pressed', mode === 'nrz');
+        $('rate-pam4').setAttribute('aria-pressed', mode === 'pam4');
+        $('rate-pam6').setAttribute('aria-pressed', mode === 'pam6');
+        calc();
+    }
+    $('rate-nrz').addEventListener('click', function () { set('nrz', 'NRZ', 1, '1'); });
+    $('rate-pam4').addEventListener('click', function () { set('pam4', 'PAM4', 2, '2'); });
+    $('rate-pam6').addEventListener('click', function () { set('pam6', 'PAM6', Math.log2(6), '2.585'); });
+    $('rate-baud').addEventListener('input', calc);
+    calc();
+})();
+</script>
 </body>
 </html>
