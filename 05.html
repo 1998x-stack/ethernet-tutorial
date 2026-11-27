@@ -10,6 +10,10 @@
         img, svg { max-width: 100%; height: auto; }
         table { width: 100%; max-width: 100%; border-collapse: collapse; }
         th, td { word-break: break-word; }
+        .mac-widget { background: #f8faff; border: 1px solid #c7d2fe; border-radius: 14px; padding: 14px 18px; margin: 16px 0; }
+        .mac-widget button { font: inherit; padding: 7px 16px; border-radius: 10px; border: 1px solid #6366f1; background: #eef2ff; color: #3730a3; cursor: pointer; }
+        .mac-widget button:focus-visible, .mac-widget button:focus { outline: 3px solid #f59e0b; outline-offset: 2px; }
+        .mac-widget input { font: inherit; width: 12em; padding: 5px 8px; border: 1px solid #94a3b8; border-radius: 8px; margin-right: 8px; }
     </style>
 </head>
 <body>
@@ -120,6 +124,18 @@
 
         <div class="tip">
             <p><strong>无意义中的有意义：</strong>MAC地址的"全球唯一性"并不像看上去那么坚固。一方面，存在一些协议（如Linux的IP alias、VMware虚拟机的虚拟网卡）允许用户自定义MAC地址，这就可能造成重复。另一方面，在虚拟化环境中，虚拟机的MAC地址是由Hypervisor生成的，理论上不同的Hypervisor可能生成相同的地址，尽管厂商都极力避免这种情况。此外，还有一些"本地管理地址"（U/L位为1，如02:XX:XX:XX:XX:XX），适用于不会与外部网络直连的内部网络设备。在这些地址范围内，重复的风险由管理员自行承担。</p>
+        </div>
+
+        <h3>5.1.1 动手：解析一个 MAC 地址</h3>
+
+        <p>输入 6 字节 MAC（如 <code>00:16:3E:12:34:56</code>），解析 OUI、单播/组播位与全局/本地位。位序依据 IEEE 802：字节 1 的 LSB 是 I/G 位，次低位是 U/L 位。</p>
+
+        <div class="mac-widget">
+            <p><label for="mac-in">MAC 地址：</label>
+                <input type="text" id="mac-in" value="00:16:3E:12:34:56" size="20">
+                <button type="button" id="mac-next">换一个示例</button></p>
+            <p>OUI = <strong id="mac-oui">00:16:3E</strong>；地址类型 = <strong id="mac-type">单播</strong>；管理范围 = <strong id="mac-scope">全局唯一（IEEE 分配）</strong>。</p>
+            <p aria-live="polite" id="mac-note">00:16:3E:12:34:56 字节 1 = 0x00，I/G=0（单播），U/L=0（全局）。</p>
         </div>
 
         <h2>5.2 单播、组播与广播</h2>
@@ -290,5 +306,31 @@
     </main>
 </div>
 </div>
+<script>
+(function () {
+    var presets = ['00:16:3E:12:34:56', '01:00:5E:01:01:01', 'ff:ff:ff:ff:ff:ff', '02:00:00:00:00:01', 'a4:5e:60:12:34:56'];
+    var idx = 0;
+    var $ = function (id) { return document.getElementById(id); };
+    function calc() {
+        var h = $('mac-in').value.replace(/[^0-9a-fA-F]/g, '');
+        if (h.length !== 12) {
+            $('mac-oui').textContent = '—'; $('mac-type').textContent = '—'; $('mac-scope').textContent = '—';
+            $('mac-note').textContent = '请输入 12 个十六进制数字（可用 : - 或空格分隔）。';
+            return;
+        }
+        var b = []; for (var i = 0; i < 12; i += 2) { b.push(parseInt(h.substr(i, 2), 16)); }
+        var b0 = b[0], ig = b0 & 1, ul = (b0 >> 1) & 1;
+        var oui = b.slice(0, 3).map(function (x) { return ('0' + x.toString(16)).slice(-2).toUpperCase(); }).join(':');
+        var allff = b.every(function (x) { return x === 255; });
+        $('mac-oui').textContent = oui;
+        $('mac-type').textContent = allff ? '广播' : (ig ? '组播' : '单播');
+        $('mac-scope').textContent = ul ? '本地管理（Locally Administered）' : '全局唯一（IEEE 分配）';
+        $('mac-note').textContent = oui.replace(/:/g, '-') + ' 字节 1 = 0x' + ('0' + b0.toString(16)).slice(-2).toUpperCase() + '，I/G=' + ig + '（' + (ig ? '组播' : '单播') + '），U/L=' + ul + '（' + (ul ? '本地' : '全局') + '）。';
+    }
+    $('mac-next').addEventListener('click', function () { idx = (idx + 1) % presets.length; $('mac-in').value = presets[idx]; calc(); });
+    $('mac-in').addEventListener('input', calc);
+    calc();
+})();
+</script>
 </body>
 </html>
