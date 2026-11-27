@@ -9,6 +9,11 @@
         /* 关键样式内联：即使不加载外部样式表，宽 ASCII 框图也应横向滚动而非撑破页面。 */
         pre { overflow-x: auto; max-width: 100%; }
         img, svg { max-width: 100%; height: auto; }
+        .frame-widget { background: #f8faff; border: 1px solid #c7d2fe; border-radius: 14px; padding: 14px 18px; margin: 16px 0; }
+        .frame-widget button { font: inherit; padding: 7px 16px; border-radius: 10px; border: 1px solid #6366f1; background: #eef2ff; color: #3730a3; cursor: pointer; margin-right: 8px; }
+        .frame-widget button[aria-pressed="true"] { background: #6366f1; color: #fff; }
+        .frame-widget button:focus-visible, .frame-widget button:focus { outline: 3px solid #f59e0b; outline-offset: 2px; }
+        .frame-widget input { font: inherit; width: 6em; padding: 5px 8px; border: 1px solid #94a3b8; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -245,6 +250,21 @@ Wireshark在显示帧时通常不显示前导码和SFD。</code></pre>
             </tr>
         </table>
 
+        <h3>4.6.1 动手：算一算帧长与填充</h3>
+
+        <p>选择帧类型并调整有效载荷长度，看看 MAC 帧本体（不含前导码/SFD）有多长、是否需要填充。计算依据 IEEE 802.3 与 RFC 894：以太网 II 头部 14 字节，802.1Q 标签额外 4 字节，FCS 4 字节，最小有效载荷 46 字节（不足需填充到 46）。数值随输入实时更新。</p>
+
+        <div class="frame-widget">
+            <p>
+                <button type="button" id="fw-dix" aria-pressed="true">以太网 II（DIX）</button>
+                <button type="button" id="fw-vlan" aria-pressed="false">802.1Q 标签帧</button>
+            </p>
+            <p><label for="fw-payload">有效载荷字节数：</label>
+                <input type="number" id="fw-payload" value="46" min="1" max="1500" step="1" inputmode="numeric"></p>
+            <p>头部 = <strong id="fw-head">14</strong> B；填充后载荷 = <strong id="fw-pad">46</strong> B；FCS = 4 B；MAC 帧本体 = <strong id="fw-total">64</strong> B；连前导码/SFD 共 <strong id="fw-wire">72</strong> B。</p>
+            <p aria-live="polite" id="fw-note">当前为以太网 II 帧，46 B 载荷无需填充。</p>
+        </div>
+
         <h2>4.7 一个踩坑故事：巨型帧的数据中心陷阱</h2>
 
         <p>前面提到了巨型帧（Jumbo Frame）的好处。但巨型帧在实际部署中存在着一个隐蔽的"陷阱"，我2018年在客户现场就遇到过一次。</p>
@@ -270,5 +290,27 @@ Wireshark在显示帧时通常不显示前导码和SFD。</code></pre>
     </main>
 </div>
 </div>
+<script>
+(function () {
+    var vlan = false;
+    var $ = function (id) { return document.getElementById(id); };
+    function calc() {
+        var raw = parseInt($('fw-payload').value, 10);
+        if (isNaN(raw) || raw < 1) { raw = 1; } if (raw > 1500) { raw = 1500; }
+        var padded = Math.max(raw, 46);
+        var head = vlan ? 18 : 14;
+        var total = head + padded + 4;
+        $('fw-head').textContent = head;
+        $('fw-pad').textContent = padded;
+        $('fw-total').textContent = total;
+        $('fw-wire').textContent = total + 8;
+        $('fw-note').textContent = (raw < 46 ? '载荷 ' + raw + ' B 小于 46 B，已填充到 ' + padded + ' B 以满足最小帧长。' : '载荷 ' + raw + ' B 无需填充。') + (vlan ? '（含 4 字节 802.1Q 标签）' : '（以太网 II 帧）');
+    }
+    $('fw-dix').addEventListener('click', function () { vlan = false; $('fw-dix').setAttribute('aria-pressed', 'true'); $('fw-vlan').setAttribute('aria-pressed', 'false'); calc(); });
+    $('fw-vlan').addEventListener('click', function () { vlan = true; $('fw-dix').setAttribute('aria-pressed', 'false'); $('fw-vlan').setAttribute('aria-pressed', 'true'); calc(); });
+    $('fw-payload').addEventListener('input', calc);
+    calc();
+})();
+</script>
 </body>
 </html>
