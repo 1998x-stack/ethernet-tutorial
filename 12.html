@@ -10,6 +10,10 @@
         img, svg { max-width: 100%; height: auto; }
         table { width: 100%; max-width: 100%; border-collapse: collapse; }
         th, td { word-break: break-word; }
+        .mcast-widget { background: #f8faff; border: 1px solid #c7d2fe; border-radius: 14px; padding: 14px 18px; margin: 16px 0; }
+        .mcast-widget button { font: inherit; padding: 7px 16px; border-radius: 10px; border: 1px solid #6366f1; background: #eef2ff; color: #3730a3; cursor: pointer; }
+        .mcast-widget button:focus-visible, .mcast-widget button:focus { outline: 3px solid #f59e0b; outline-offset: 2px; }
+        .mcast-widget input { font: inherit; width: 10em; padding: 5px 8px; border: 1px solid #94a3b8; border-radius: 8px; margin-right: 8px; }
     </style>
 </head>
 <body>
@@ -138,6 +142,18 @@ MAC地址: 01-00-5E-00-00-01</code></pre>
 
         <p>解决这个问题的方法是在交换机上启用<strong>IGMP Snooping</strong>——它让交换机不再只依赖MAC地址，而是"偷看"IGMP报文中的IP组播地址，从而精确地知道哪个主机订阅了哪个具体的IP组播组。</p>
 
+        <h3>12.3.1 动手：从 IP 组播地址算出 MAC</h3>
+
+        <p>输入任意 IPv4 组播地址（224.0.0.0–239.255.255.255），按 RFC 1112 的映射规则算出对应的 MAC 组播地址。规则：取 IP 的低 23 位放入 <code>01:00:5E:0x:xx:xx</code>，第二字节最高位清零（<code>&amp;0x7F</code>），高 5 位被丢弃。</p>
+
+        <div class="mcast-widget">
+            <p><label for="mc-ip">IPv4 组播地址：</label>
+                <input type="text" id="mc-ip" value="224.1.1.1" inputmode="numeric" size="16">
+                <button type="button" id="mc-next">换一个组播地址</button></p>
+            <p>对应 MAC = <strong id="mc-mac">01:00:5E:01:01:01</strong></p>
+            <p aria-live="polite" id="mc-note">低 23 位相同的地址共 32 个，它们都映射到这个 MAC。</p>
+        </div>
+
         <h2>12.4 IGMP：主机与路由器之间的"组播语言"</h2>
 
         <p><strong>IGMP（Internet Group Management Protocol，互联网组管理协议）</strong>是IP组播体系中的核心协议之一。它运行在<strong>主机和最后一跳路由器</strong>之间，用于主机通知路由器"我想加入这个组播组"或者"我想离开这个组"。IGMP有三个版本，我们来看它们之间的差异。</p>
@@ -253,5 +269,29 @@ MAC地址: 01-00-5E-00-00-01</code></pre>
     </main>
 </div>
 </div>
+<script>
+(function () {
+    var presets = ['224.1.1.1', '239.255.255.250', '224.0.0.1', '232.10.20.30', '225.1.1.1'];
+    var idx = 0;
+    var $ = function (id) { return document.getElementById(id); };
+    function hex(n) { return ('0' + n.toString(16)).slice(-2).toUpperCase(); }
+    function calc() {
+        var parts = $('mc-ip').value.trim().split('.');
+        var o = parts.map(function (p) { return parseInt(p, 10); });
+        var bad = o.length !== 4 || o.some(function (x) { return isNaN(x) || x < 0 || x > 255; });
+        if (bad || o[0] < 224 || o[0] > 239) {
+            $('mc-mac').textContent = '—';
+            $('mc-note').textContent = '请输入合法的 IPv4 组播地址：首字节在 224–239 之间。';
+            return;
+        }
+        var mac = '01:00:5E:' + hex(o[1] & 0x7F) + ':' + hex(o[2]) + ':' + hex(o[3]);
+        $('mc-mac').textContent = mac;
+        $('mc-note').textContent = 'IP ' + o.join('.') + ' 的低 23 位映射为 ' + mac + '；高 5 位被丢弃，因此共有 32 个 IP 组播地址映射到同一个 MAC。';
+    }
+    $('mc-next').addEventListener('click', function () { idx = (idx + 1) % presets.length; $('mc-ip').value = presets[idx]; calc(); });
+    $('mc-ip').addEventListener('input', calc);
+    calc();
+})();
+</script>
 </body>
 </html>
