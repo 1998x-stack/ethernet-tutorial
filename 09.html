@@ -8,6 +8,10 @@
     <style>
         pre { overflow-x: auto; max-width: 100%; }
         img, svg { max-width: 100%; height: auto; }
+        .vlan-widget { background: #f8faff; border: 1px solid #c7d2fe; border-radius: 14px; padding: 14px 18px; margin: 16px 0; }
+        .vlan-widget button { font: inherit; padding: 7px 16px; border-radius: 10px; border: 1px solid #6366f1; background: #eef2ff; color: #3730a3; cursor: pointer; }
+        .vlan-widget button:focus-visible, .vlan-widget button:focus { outline: 3px solid #f59e0b; outline-offset: 2px; }
+        .vlan-widget input[type=number] { font: inherit; width: 6em; padding: 5px 8px; border: 1px solid #94a3b8; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -108,6 +112,21 @@
 
         <div class="tip">
             <p><strong>实用技巧</strong>：在Wireshark中抓包时，如果一个以太网帧带有VLAN标签，你会看到Ethernet II头部后面多了一个"802.1Q Virtual LAN"协议层。展开它就能看到VID、PCP和DEI三个字段。这是快速验证VLAN配置正确与否的最直接方法。如果你发现某个帧的VLAN标签不符合预期，那就说明中间的交换机可能做了错误的标签操作。</p>
+        </div>
+
+        <h3>9.2.1 动手：拆解 802.1Q 标签的 16 位</h3>
+
+        <p>802.1Q 标签的 TPID 固定为 <code>0x8100</code>，其后 16 位是 TCI = <code>PCP(3) | DEI(1) | VID(12)</code>。调整下面三项，看看 TCI 的二进制与十六进制如何变化（字段布局依据 IEEE 802.1Q）。</p>
+
+        <div class="vlan-widget">
+            <p><label for="vlan-pcp">PCP 优先级 (0–7)：</label>
+                <input type="number" id="vlan-pcp" min="0" max="7" value="0" inputmode="numeric"></p>
+            <p><label><input type="checkbox" id="vlan-dei"> DEI 置 1（拥塞时可优先丢弃）</label></p>
+            <p><label for="vlan-vid">VID (0–4095)：</label>
+                <input type="number" id="vlan-vid" min="0" max="4095" value="100" inputmode="numeric">
+                <button type="button" id="vlan-demo">换一组示例</button></p>
+            <p>TCI = <strong id="vlan-tci">0x0064</strong>（十进制 <strong id="vlan-dec">100</strong>）；二进制 = <code id="vlan-bin">0000 0000 0110 0100</code></p>
+            <p aria-live="polite" id="vlan-note">PCP=0，DEI=0，VID=100。</p>
         </div>
 
         <h2>9.3 Access端口、Trunk端口与Hybrid端口</h2>
@@ -236,5 +255,27 @@
     </main>
 </div>
 </div>
+<script>
+(function () {
+    var presets = [[0, false, 100], [5, false, 10], [7, false, 4094], [3, true, 20]];
+    var i = 0;
+    var $ = function (id) { return document.getElementById(id); };
+    function pad4(bin) { return bin.replace(/(.{4})(?=.)/g, '$1 '); }
+    function calc() {
+        var pcp = Math.min(7, Math.max(0, parseInt($('vlan-pcp').value, 10) || 0));
+        var dei = $('vlan-dei').checked ? 1 : 0;
+        var vid = Math.min(4095, Math.max(0, parseInt($('vlan-vid').value, 10) || 0));
+        var tci = (pcp << 13) | (dei << 12) | vid;
+        $('vlan-tci').textContent = '0x' + ('0000' + tci.toString(16).toUpperCase()).slice(-4);
+        $('vlan-dec').textContent = tci;
+        $('vlan-bin').textContent = pad4(('0000000000000000' + tci.toString(2)).slice(-16));
+        $('vlan-note').textContent = 'PCP=' + pcp + '，DEI=' + dei + '，VID=' + vid + '：高 3 位为优先级、第 4 位为 DEI、低 12 位为 VID。';
+    }
+    $('vlan-demo').addEventListener('click', function () { i = (i + 1) % presets.length; $('vlan-pcp').value = presets[i][0]; $('vlan-dei').checked = presets[i][1]; $('vlan-vid').value = presets[i][2]; calc(); });
+    ['vlan-pcp', 'vlan-vid'].forEach(function (id) { $(id).addEventListener('input', calc); });
+    $('vlan-dei').addEventListener('change', calc);
+    calc();
+})();
+</script>
 </body>
 </html>
