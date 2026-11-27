@@ -10,6 +10,10 @@
         img, svg { max-width: 100%; height: auto; }
         table { width: 100%; max-width: 100%; border-collapse: collapse; }
         th, td { word-break: break-word; }
+        .perf-widget { background: #f8faff; border: 1px solid #c7d2fe; border-radius: 14px; padding: 14px 18px; margin: 16px 0; }
+        .perf-widget button { font: inherit; padding: 7px 14px; border-radius: 10px; border: 1px solid #6366f1; background: #eef2ff; color: #3730a3; cursor: pointer; margin: 0 8px 6px 0; }
+        .perf-widget button[aria-pressed="true"] { background: #6366f1; color: #fff; }
+        .perf-widget button:focus-visible, .perf-widget button:focus { outline: 3px solid #f59e0b; outline-offset: 2px; }
     </style>
 </head>
 <body>
@@ -68,6 +72,25 @@
 
         <div class="highlight">
             <p><strong>关键认知</strong>：这四个维度是相互影响的。当链路利用率接近饱和时，交换机队列开始填满，导致时延增加（排队时延），进而触发TCP拥塞控制减少发送窗口——最终表现为吞吐量下降。所以任何一个维度的恶化，都可能引发其他维度的连锁反应。性能测试的关键就在于找到这四个维度之间的平衡点。</p>
+        </div>
+
+        <h3>24.1.1 动手：线速下每秒能发多少个包？</h3>
+
+        <p>选择线路速率与帧长，估算线速下每秒包数（pps）与帧本体比特率。计算含以太网物理开销：前导码 7 B + SFD 1 B + 帧间间隔 12 B，共 20 B 固定开销；帧本体比特率只计整个 MAC 帧（含各层头部与 FCS，不含应用层开销）。结果为按公式推导的<strong>教学示意</strong>，未考虑线路编码、FEC 与设备处理开销。</p>
+
+        <div class="perf-widget">
+            <p>
+                <button type="button" id="perf-rate1" aria-pressed="true">1 Gb/s</button>
+                <button type="button" id="perf-rate2" aria-pressed="false">10 Gb/s</button>
+                <button type="button" id="perf-rate3" aria-pressed="false">100 Gb/s</button>
+            </p>
+            <p>
+                <button type="button" id="perf-s64" aria-pressed="true">64 B 帧</button>
+                <button type="button" id="perf-s512" aria-pressed="false">512 B 帧</button>
+                <button type="button" id="perf-s1518" aria-pressed="false">1518 B 帧</button>
+            </p>
+            <p>线速 ≈ <strong id="perf-pps">1.49</strong> Mpps（每秒 <strong id="perf-ppsraw">1,488,095</strong> 个包）；帧本体比特率 ≈ <strong id="perf-good">761.9</strong> Mb/s。</p>
+            <p aria-live="polite" id="perf-note">1 Gb/s + 64 B 帧：固定开销 20 B，估算 1.49 Mpps，帧本体 761.9 Mb/s。</p>
         </div>
 
         <h2>24.2 iperf3详解</h2>
@@ -307,5 +330,29 @@ iperf3 -s
     </main>
 </div>
 </div>
+<script>
+(function () {
+    var rate = 1e9, frame = 64;
+    var $ = function (id) { return document.getElementById(id); };
+    function calc() {
+        var onWire = (20 + frame) * 8;
+        var pps = rate / onWire;
+        var good = pps * frame * 8 / 1e6;
+        $('perf-pps').textContent = (pps / 1e6).toFixed(2);
+        $('perf-ppsraw').textContent = Math.round(pps).toLocaleString('en-US');
+        $('perf-good').textContent = good.toFixed(1);
+        $('perf-note').textContent = (rate / 1e9) + ' Gb/s + ' + frame + ' B 帧：固定开销 20 B，估算 ' + (pps / 1e6).toFixed(2) + ' Mpps，帧本体 ' + good.toFixed(1) + ' Mb/s。';
+    }
+    function setRate(id, bits) { ['perf-rate1', 'perf-rate2', 'perf-rate3'].forEach(function (x) { $(x).setAttribute('aria-pressed', x === id); }); rate = bits; calc(); }
+    function setFrame(id, bytes) { ['perf-s64', 'perf-s512', 'perf-s1518'].forEach(function (x) { $(x).setAttribute('aria-pressed', x === id); }); frame = bytes; calc(); }
+    $('perf-rate1').addEventListener('click', function () { setRate('perf-rate1', 1e9); });
+    $('perf-rate2').addEventListener('click', function () { setRate('perf-rate2', 1e10); });
+    $('perf-rate3').addEventListener('click', function () { setRate('perf-rate3', 1e11); });
+    $('perf-s64').addEventListener('click', function () { setFrame('perf-s64', 64); });
+    $('perf-s512').addEventListener('click', function () { setFrame('perf-s512', 512); });
+    $('perf-s1518').addEventListener('click', function () { setFrame('perf-s1518', 1518); });
+    calc();
+})();
+</script>
 </body>
 </html>
