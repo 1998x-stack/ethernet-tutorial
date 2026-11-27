@@ -10,6 +10,11 @@
         img, svg { max-width: 100%; height: auto; }
         table { width: 100%; max-width: 100%; border-collapse: collapse; }
         th, td { word-break: break-word; }
+        .poe-widget { background: #f8faff; border: 1px solid #c7d2fe; border-radius: 14px; padding: 14px 18px; margin: 16px 0; }
+        .poe-widget button { font: inherit; padding: 7px 14px; border-radius: 10px; border: 1px solid #6366f1; background: #eef2ff; color: #3730a3; cursor: pointer; margin: 0 8px 6px 0; }
+        .poe-widget button[aria-pressed="true"] { background: #6366f1; color: #fff; }
+        .poe-widget button:focus-visible, .poe-widget button:focus { outline: 3px solid #f59e0b; outline-offset: 2px; }
+        .poe-widget input { font: inherit; width: 6em; padding: 5px 8px; border: 1px solid #94a3b8; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -190,6 +195,23 @@
 
         <p>从802.3bt开始，标准引入了<strong>4对线同时供电（4PPoE）</strong>——所有4对双绞线都用来供电，每对线上的电流只有原来的一半，线损显著降低。这是实现60W和90W高功率供电的关键技术。</p>
 
+        <h3>17.3.1 动手：估算线缆长度对可用功率的影响</h3>
+
+        <p>选择 PoE 标准并调整线缆长度，按一个简化的线性模型估算 PD 端可用功率：线损按 100 米满值（PSE 功率 − 标称 PD 功率）线性缩放。真实损耗还与线规、温度、连接器相关，此处为<strong>教学示意</strong>。</p>
+
+        <div class="poe-widget">
+            <p>
+                <button type="button" id="poe-af" aria-pressed="false">802.3af</button>
+                <button type="button" id="poe-at" aria-pressed="true">802.3at</button>
+                <button type="button" id="poe-bt3" aria-pressed="false">bt Type 3</button>
+                <button type="button" id="poe-bt4" aria-pressed="false">bt Type 4</button>
+            </p>
+            <p><label for="poe-len">线缆长度 (米，0–100)：</label>
+                <input type="number" id="poe-len" min="0" max="100" value="100" inputmode="numeric"></p>
+            <p>PSE 预算 = <strong id="poe-pse">30.0</strong> W；标称 PD 功率(100 m) = <strong id="poe-nom">25.5</strong> W；本长度估算可用 ≈ <strong id="poe-out">25.5</strong> W。</p>
+            <p aria-live="polite" id="poe-note">802.3at：100 m 线缆估算 PD 可用 25.5 W。</p>
+        </div>
+
         <h2>17.4 LLDP电源管理与智能协商</h2>
 
         <p>基础的分级（Classification）只能告诉PSE设备的功率等级（class 0-8），但这个等级是粗粒度的。802.3at和802.3bt引入了基于<strong>LLDP（Link Layer Discovery Protocol，链路层发现协议）</strong>的精细电源管理机制。</p>
@@ -252,5 +274,31 @@
     </main>
 </div>
 </div>
+<script>
+(function () {
+    var std = { pse: 30, pd: 25.5, name: '802.3at' };
+    var $ = function (id) { return document.getElementById(id); };
+    function calc() {
+        var len = Math.min(100, Math.max(0, parseFloat($('poe-len').value) || 0));
+        var loss = (std.pse - std.pd) * (len / 100);
+        var out = Math.max(0, std.pse - loss);
+        $('poe-pse').textContent = std.pse.toFixed(1);
+        $('poe-nom').textContent = std.pd.toFixed(1);
+        $('poe-out').textContent = out.toFixed(1);
+        $('poe-note').textContent = std.name + '：' + len + ' m 线缆，估算线损 ' + loss.toFixed(2) + ' W，PD 可用约 ' + out.toFixed(1) + ' W（线性近似）。';
+    }
+    function set(id, pse, pd, name) {
+        std = { pse: pse, pd: pd, name: name };
+        ['poe-af', 'poe-at', 'poe-bt3', 'poe-bt4'].forEach(function (x) { $(x).setAttribute('aria-pressed', x === id); });
+        calc();
+    }
+    $('poe-af').addEventListener('click', function () { set('poe-af', 15.4, 12.95, '802.3af'); });
+    $('poe-at').addEventListener('click', function () { set('poe-at', 30, 25.5, '802.3at'); });
+    $('poe-bt3').addEventListener('click', function () { set('poe-bt3', 60, 51, '802.3bt Type 3'); });
+    $('poe-bt4').addEventListener('click', function () { set('poe-bt4', 90, 71.3, '802.3bt Type 4'); });
+    $('poe-len').addEventListener('input', calc);
+    calc();
+})();
+</script>
 </body>
 </html>
